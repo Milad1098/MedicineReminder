@@ -372,3 +372,26 @@ fun AddMedicineDialog(
         }
     )
 }
+
+fun scheduleNotification(
+    context: android.content.Context,
+    medicineName: String
+) {
+
+    val data = Data.Builder()
+        .putString("medicine", medicineName)
+        .build()
+
+    val request =
+        OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setInitialDelay(
+                10,
+                TimeUnit.SECONDS
+            )
+            .setInputData(data)
+            .build()
+
+    WorkManager
+        .getInstance(context)
+        .enqueue(request)
+}
