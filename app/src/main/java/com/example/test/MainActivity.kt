@@ -1,9 +1,9 @@
 package com.example.test
 
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -26,8 +27,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.room.*
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.launch
-import androidx.work.*
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -59,9 +62,12 @@ val Vazir = FontFamily(
 
 @Entity
 data class Medicine(
+
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+
     val name: String,
+
     val time: String
 )
 
@@ -80,11 +86,14 @@ interface MedicineDao {
     version = 1
 )
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun medicineDao(): MedicineDao
 }
 
 @Composable
 fun MedicineReminderApp(db: AppDatabase) {
+
+    val context = LocalContext.current
 
     val dao = db.medicineDao()
 
@@ -99,14 +108,15 @@ fun MedicineReminderApp(db: AppDatabase) {
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(true) {
+
         medicines = dao.getAll()
     }
 
     val gradient = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF020617),
-            Color(0xFF0F172A),
-            Color(0xFF111827)
+            Color(0xFF030712),
+            Color(0xFF111827),
+            Color(0xFF1E1B4B)
         )
     )
 
@@ -121,21 +131,42 @@ fun MedicineReminderApp(db: AppDatabase) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            Text(
-                text = "یادآور دارو",
-                color = Color.White,
-                fontFamily = Vazir,
-                fontSize = 34.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            Spacer(modifier = Modifier.height(6.dp))
+                Column {
 
-            Text(
-                text = "داروهایت را هوشمند مدیریت کن",
-                color = Color(0xFF94A3B8),
-                fontFamily = Vazir,
-                fontSize = 16.sp
-            )
+                    Text(
+                        text = "یادآور دارو",
+                        color = Color.White,
+                        fontFamily = Vazir,
+                        fontSize = 34.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "مدیریت هوشمند داروها",
+                        color = Color(0xFF94A3B8),
+                        fontFamily = Vazir
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color(0x22FFFFFF)
+                ) {
+
+                    Text(
+                        text = "💊",
+                        modifier = Modifier.padding(16.dp),
+                        fontSize = 24.sp
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -147,9 +178,9 @@ fun MedicineReminderApp(db: AppDatabase) {
 
                 LazyColumn {
 
-                    items(medicines) {
+                    items(medicines) { medicine ->
 
-                        MedicineCard(it)
+                        MedicineCard(medicine)
 
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -161,9 +192,14 @@ fun MedicineReminderApp(db: AppDatabase) {
             onClick = {
                 showDialog = true
             },
+
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(10.dp),
+                .padding(10.dp)
+                .animateContentSize(),
+
+            shape = RoundedCornerShape(22.dp),
+
             containerColor = Color(0xFF22C55E)
         ) {
 
@@ -178,18 +214,16 @@ fun MedicineReminderApp(db: AppDatabase) {
     if (showDialog) {
 
         AddMedicineDialog(
+
             onDismiss = {
                 showDialog = false
             },
+
             onAdd = { name, time ->
 
                 scope.launch {
 
                     dao.insert(
-                        scheduleNotification(
-                            context,
-                            name
-                        )
                         Medicine(
                             name = name,
                             time = time
@@ -197,6 +231,11 @@ fun MedicineReminderApp(db: AppDatabase) {
                     )
 
                     medicines = dao.getAll()
+
+                    scheduleNotification(
+                        context,
+                        name
+                    )
                 }
 
                 showDialog = false
@@ -215,18 +254,27 @@ fun EmptyState() {
 
         Spacer(modifier = Modifier.height(80.dp))
 
+        Icon(
+            Icons.Default.Medication,
+            contentDescription = null,
+            tint = Color(0xFF22C55E),
+            modifier = Modifier.size(72.dp)
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         Text(
             text = "هنوز دارویی اضافه نشده",
             color = Color.White,
             fontFamily = Vazir,
-            fontSize = 20.sp
+            fontSize = 22.sp
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = "روی دکمه + بزن",
-            color = Color.Gray,
+            color = Color(0xFF94A3B8),
             fontFamily = Vazir
         )
     }
@@ -236,10 +284,14 @@ fun EmptyState() {
 fun MedicineCard(medicine: Medicine) {
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp)),
+
         shape = RoundedCornerShape(28.dp),
+
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E293B)
+            containerColor = Color(0x33FFFFFF)
         )
     ) {
 
@@ -247,6 +299,7 @@ fun MedicineCard(medicine: Medicine) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(22.dp),
+
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -255,6 +308,7 @@ fun MedicineCard(medicine: Medicine) {
                     .size(65.dp)
                     .clip(RoundedCornerShape(22.dp))
                     .background(Color(0xFF22C55E)),
+
                 contentAlignment = Alignment.Center
             ) {
 
@@ -303,18 +357,87 @@ fun AddMedicineDialog(
     }
 
     AlertDialog(
+
         onDismissRequest = onDismiss,
+
+        containerColor = Color(0xFF1E293B),
+
+        shape = RoundedCornerShape(28.dp),
+
+        title = {
+
+            Text(
+                text = "افزودن دارو",
+                fontFamily = Vazir,
+                color = Color.White
+            )
+        },
+
+        text = {
+
+            Column {
+
+                OutlinedTextField(
+                    value = name,
+
+                    onValueChange = {
+                        name = it
+                    },
+
+                    label = {
+                        Text(
+                            "نام دارو",
+                            fontFamily = Vazir
+                        )
+                    },
+
+                    shape = RoundedCornerShape(18.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = time,
+
+                    onValueChange = {
+                        time = it
+                    },
+
+                    label = {
+                        Text(
+                            "زمان مصرف",
+                            fontFamily = Vazir
+                        )
+                    },
+
+                    shape = RoundedCornerShape(18.dp)
+                )
+            }
+        },
 
         confirmButton = {
 
             Button(
                 onClick = {
-                    onAdd(name, time)
-                }
+
+                    if (
+                        name.isNotBlank() &&
+                        time.isNotBlank()
+                    ) {
+
+                        onAdd(name, time)
+                    }
+                },
+
+                shape = RoundedCornerShape(16.dp),
+
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF22C55E)
+                )
             ) {
 
                 Text(
-                    "ثبت",
+                    text = "ثبت",
                     fontFamily = Vazir
                 )
             }
@@ -327,50 +450,9 @@ fun AddMedicineDialog(
             ) {
 
                 Text(
-                    "لغو",
-                    fontFamily = Vazir
-                )
-            }
-        },
-
-        title = {
-
-            Text(
-                text = "افزودن دارو",
-                fontFamily = Vazir
-            )
-        },
-
-        text = {
-
-            Column {
-
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = {
-                        name = it
-                    },
-                    label = {
-                        Text(
-                            "نام دارو",
-                            fontFamily = Vazir
-                        )
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = time,
-                    onValueChange = {
-                        time = it
-                    },
-                    label = {
-                        Text(
-                            "زمان مصرف",
-                            fontFamily = Vazir
-                        )
-                    }
+                    text = "لغو",
+                    fontFamily = Vazir,
+                    color = Color.White
                 )
             }
         }
