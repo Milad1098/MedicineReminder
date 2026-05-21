@@ -5,7 +5,7 @@
         android:allowBackup="true"
         android:label="یادآور دارو"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+        android:theme="@style/Theme.Test">
 
         <activity
             android:name=".MainActivity"
