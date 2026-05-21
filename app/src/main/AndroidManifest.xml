@@ -1,0 +1,8 @@
+<manifest package="com.example.test"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="Test App">
+    </application>
+
+</manifest>
