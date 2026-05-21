@@ -186,6 +186,10 @@ fun MedicineReminderApp(db: AppDatabase) {
                 scope.launch {
 
                     dao.insert(
+                        scheduleNotification(
+                            context,
+                            name
+                        )
                         Medicine(
                             name = name,
                             time = time
