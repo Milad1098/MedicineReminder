@@ -1,9 +1,9 @@
 package com.example.test
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,12 +12,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -27,16 +25,19 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-data class MedicineItem(
-    val name: String,
-    val time: String
-)
+import androidx.room.*
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "medicine_db"
+        ).build()
 
         setContent {
 
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 LocalLayoutDirection provides LayoutDirection.Rtl
             ) {
 
-                MedicineReminderApp()
+                MedicineReminderApp(db)
             }
         }
     }
@@ -54,21 +55,52 @@ val Vazir = FontFamily(
     Font(R.font.vazirmatn_regular)
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Entity
+data class Medicine(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val name: String,
+    val time: String
+)
+
+@Dao
+interface MedicineDao {
+
+    @Query("SELECT * FROM Medicine")
+    suspend fun getAll(): List<Medicine>
+
+    @Insert
+    suspend fun insert(medicine: Medicine)
+}
+
+@Database(
+    entities = [Medicine::class],
+    version = 1
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun medicineDao(): MedicineDao
+}
+
 @Composable
-fun MedicineReminderApp() {
+fun MedicineReminderApp(db: AppDatabase) {
+
+    val dao = db.medicineDao()
 
     var medicines by remember {
-        mutableStateOf(listOf<MedicineItem>())
+        mutableStateOf(listOf<Medicine>())
     }
 
-    var showBottomSheet by remember {
+    var showDialog by remember {
         mutableStateOf(false)
     }
 
-    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
 
-    val backgroundGradient = Brush.verticalGradient(
+    LaunchedEffect(true) {
+        medicines = dao.getAll()
+    }
+
+    val gradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF020617),
             Color(0xFF0F172A),
@@ -79,16 +111,13 @@ fun MedicineReminderApp() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundGradient)
+            .background(gradient)
+            .padding(20.dp)
     ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp)
-        ) {
+        Column {
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = "یادآور دارو",
@@ -97,7 +126,7 @@ fun MedicineReminderApp() {
                 fontSize = 34.sp
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = "داروهایت را هوشمند مدیریت کن",
@@ -108,38 +137,31 @@ fun MedicineReminderApp() {
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            AnimatedVisibility(
-                visible = medicines.isEmpty()
-            ) {
+            if (medicines.isEmpty()) {
 
                 EmptyState()
-            }
 
-            LazyColumn {
+            } else {
 
-                items(medicines) { medicine ->
+                LazyColumn {
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    items(medicines) {
 
-                    MedicineCard(
-                        name = medicine.name,
-                        time = medicine.time
-                    )
-                }
+                        MedicineCard(it)
 
-                item {
-                    Spacer(modifier = Modifier.height(120.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
 
         FloatingActionButton(
             onClick = {
-                showBottomSheet = true
+                showDialog = true
             },
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(24.dp),
+                .padding(10.dp),
             containerColor = Color(0xFF22C55E)
         ) {
 
@@ -149,25 +171,31 @@ fun MedicineReminderApp() {
                 tint = Color.White
             )
         }
+    }
 
-        if (showBottomSheet) {
+    if (showDialog) {
 
-            AddMedicineBottomSheet(
-                sheetState = sheetState,
-                onDismiss = {
-                    showBottomSheet = false
-                },
-                onAddMedicine = { name, time ->
+        AddMedicineDialog(
+            onDismiss = {
+                showDialog = false
+            },
+            onAdd = { name, time ->
 
-                    medicines = medicines + MedicineItem(
-                        name,
-                        time
+                scope.launch {
+
+                    dao.insert(
+                        Medicine(
+                            name = name,
+                            time = time
+                        )
                     )
 
-                    showBottomSheet = false
+                    medicines = dao.getAll()
                 }
-            )
-        }
+
+                showDialog = false
+            }
+        )
     }
 }
 
@@ -175,23 +203,14 @@ fun MedicineReminderApp() {
 fun EmptyState() {
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 80.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Icon(
-            Icons.Default.Medication,
-            contentDescription = null,
-            tint = Color(0xFF334155),
-            modifier = Modifier.size(90.dp)
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(80.dp))
 
         Text(
-            text = "هنوز دارویی ثبت نشده",
+            text = "هنوز دارویی اضافه نشده",
             color = Color.White,
             fontFamily = Vazir,
             fontSize = 20.sp
@@ -200,26 +219,21 @@ fun EmptyState() {
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = "برای افزودن دارو روی دکمه + بزن",
-            color = Color(0xFF94A3B8),
-            fontFamily = Vazir,
-            fontSize = 14.sp
+            text = "روی دکمه + بزن",
+            color = Color.Gray,
+            fontFamily = Vazir
         )
     }
 }
 
 @Composable
-fun MedicineCard(
-    name: String,
-    time: String
-) {
+fun MedicineCard(medicine: Medicine) {
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xAA1E293B)
+            containerColor = Color(0xFF1E293B)
         )
     ) {
 
@@ -232,7 +246,7 @@ fun MedicineCard(
 
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(65.dp)
                     .clip(RoundedCornerShape(22.dp))
                     .background(Color(0xFF22C55E)),
                 contentAlignment = Alignment.Center
@@ -247,12 +261,10 @@ fun MedicineCard(
 
             Spacer(modifier = Modifier.width(18.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column {
 
                 Text(
-                    text = name,
+                    text = medicine.name,
                     color = Color.White,
                     fontFamily = Vazir,
                     fontSize = 20.sp
@@ -260,132 +272,101 @@ fun MedicineCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Icon(
-                        Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = Color(0xFF94A3B8),
-                        modifier = Modifier.size(18.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Text(
-                        text = time,
-                        color = Color(0xFF94A3B8),
-                        fontFamily = Vazir
-                    )
-                }
+                Text(
+                    text = medicine.time,
+                    color = Color(0xFF94A3B8),
+                    fontFamily = Vazir
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMedicineBottomSheet(
-    sheetState: SheetState,
+fun AddMedicineDialog(
     onDismiss: () -> Unit,
-    onAddMedicine: (String, String) -> Unit
+    onAdd: (String, String) -> Unit
 ) {
 
-    var medicineName by remember {
+    var name by remember {
         mutableStateOf("")
     }
 
-    var medicineTime by remember {
+    var time by remember {
         mutableStateOf("")
     }
 
-    ModalBottomSheet(
+    AlertDialog(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = Color(0xFF0F172A)
-    ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-        ) {
-
-            Text(
-                text = "افزودن دارو",
-                color = Color.White,
-                fontFamily = Vazir,
-                fontSize = 24.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            OutlinedTextField(
-                value = medicineName,
-                onValueChange = {
-                    medicineName = it
-                },
-                label = {
-                    Text(
-                        "نام دارو",
-                        fontFamily = Vazir
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = medicineTime,
-                onValueChange = {
-                    medicineTime = it
-                },
-                label = {
-                    Text(
-                        "زمان مصرف",
-                        fontFamily = Vazir
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
+        confirmButton = {
 
             Button(
                 onClick = {
-
-                    if (
-                        medicineName.isNotBlank() &&
-                        medicineTime.isNotBlank()
-                    ) {
-
-                        onAddMedicine(
-                            medicineName,
-                            medicineTime
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(58.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF22C55E)
-                ),
-                shape = RoundedCornerShape(22.dp)
+                    onAdd(name, time)
+                }
             ) {
 
                 Text(
-                    text = "ثبت دارو",
-                    fontFamily = Vazir,
-                    fontSize = 18.sp
+                    "ثبت",
+                    fontFamily = Vazir
                 )
             }
+        },
 
-            Spacer(modifier = Modifier.height(40.dp))
+        dismissButton = {
+
+            TextButton(
+                onClick = onDismiss
+            ) {
+
+                Text(
+                    "لغو",
+                    fontFamily = Vazir
+                )
+            }
+        },
+
+        title = {
+
+            Text(
+                text = "افزودن دارو",
+                fontFamily = Vazir
+            )
+        },
+
+        text = {
+
+            Column {
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                    },
+                    label = {
+                        Text(
+                            "نام دارو",
+                            fontFamily = Vazir
+                        )
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = time,
+                    onValueChange = {
+                        time = it
+                    },
+                    label = {
+                        Text(
+                            "زمان مصرف",
+                            fontFamily = Vazir
+                        )
+                    }
+                )
+            }
         }
-    }
+    )
 }
