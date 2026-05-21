@@ -5,19 +5,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -26,172 +28,154 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MedicineReminderApp()
+            CompositionLocalProvider(
+                LocalLayoutDirection provides LayoutDirection.Rtl
+            ) {
+                MedicineReminderApp()
+            }
+        }
+    }
+}
+
+val Vazir = FontFamily(
+    Font(R.font.vazirmatn_regular)
+)
+
+@Composable
+fun MedicineReminderApp() {
+
+    val gradient = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF0F172A),
+            Color(0xFF111827),
+            Color(0xFF1E293B)
+        )
+    )
+
+    Surface(
+        modifier = Modifier.fillMaxSize()
+    ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(gradient)
+                .padding(20.dp)
+        ) {
+
+            Column {
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                Text(
+                    text = "یادآور دارو",
+                    fontFamily = Vazir,
+                    color = Color.White,
+                    fontSize = 32.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "مصرف داروهایت را فراموش نکن",
+                    fontFamily = Vazir,
+                    color = Color(0xFFCBD5E1),
+                    fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                MedicineCard(
+                    name = "قرص فشار خون",
+                    time = "08:00 صبح"
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                MedicineCard(
+                    name = "ویتامین D",
+                    time = "09:30 شب"
+                )
+            }
+
+            FloatingActionButton(
+                onClick = { },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp),
+                containerColor = Color(0xFF22C55E)
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null
+                )
+            }
         }
     }
 }
 
 @Composable
-fun MedicineReminderApp() {
+fun MedicineCard(
+    name: String,
+    time: String
+) {
 
-    val medicines = listOf(
-        "قرص فشار خون - ۸ صبح",
-        "انسولین - ۱ ظهر",
-        "ویتامین D - ۹ شب"
-    )
-
-    MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = Color(0xFF2563EB),
-            secondary = Color(0xFF0EA5E9),
-            background = Color(0xFFF8FAFC)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 20.dp,
+                shape = RoundedCornerShape(28.dp)
+            ),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E293B)
         )
     ) {
 
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {},
-                    containerColor = Color(0xFF2563EB)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                }
-            },
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(22.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-            bottomBar = {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = true,
-                        onClick = {},
-                        icon = {
-                            Icon(Icons.Default.Home, null)
-                        },
-                        label = {
-                            Text("خانه")
-                        }
-                    )
-
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = {},
-                        icon = {
-                            Icon(Icons.Default.Medication, null)
-                        },
-                        label = {
-                            Text("داروها")
-                        }
-                    )
-                }
-            }
-
-        ) { padding ->
-
-            LazyColumn(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFF8FAFC))
-                    .padding(padding)
-                    .padding(16.dp)
+                    .size(60.dp)
+                    .background(
+                        Color(0xFF22C55E),
+                        RoundedCornerShape(20.dp)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
 
-                item {
+                Icon(
+                    Icons.Default.Medication,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
 
-                    Text(
-                        text = "سلام 👋",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+            Spacer(modifier = Modifier.width(16.dp))
 
-                    Spacer(modifier = Modifier.height(8.dp))
+            Column {
 
-                    Text(
-                        text = "وقت داروی بعدی نزدیکه",
-                        fontSize = 18.sp,
-                        color = Color.Gray
-                    )
+                Text(
+                    text = name,
+                    color = Color.White,
+                    fontFamily = Vazir,
+                    fontSize = 20.sp
+                )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF2563EB)
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-
-                        Column(
-                            modifier = Modifier.padding(24.dp)
-                        ) {
-
-                            Text(
-                                text = "داروی بعدی",
-                                color = Color.White,
-                                fontSize = 18.sp
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "قرص فشار خون",
-                                color = Color.White,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "۸:۰۰ صبح",
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "داروهای امروز",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                items(medicines) { medicine ->
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Icon(
-                                Icons.Default.Medication,
-                                contentDescription = null,
-                                tint = Color(0xFF2563EB)
-                            )
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Text(
-                                text = medicine,
-                                fontSize = 18.sp
-                            )
-                        }
-                    }
-                }
+                Text(
+                    text = time,
+                    color = Color(0xFF94A3B8),
+                    fontFamily = Vazir,
+                    fontSize = 15.sp
+                )
             }
         }
     }
