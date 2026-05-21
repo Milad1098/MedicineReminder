@@ -62,7 +62,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
-    
+    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.compose.animation:animation")
     ksp("androidx.room:room-compiler:2.6.1")
 
