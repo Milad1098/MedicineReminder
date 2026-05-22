@@ -71,7 +71,9 @@ fun HomeScreen(
 
             if (medicines.isEmpty()) {
 
-                EmptyState()
+                EmptyState(
+                    fontFamily = com.example.test.ui.theme.Vazir
+                )
 
             } else {
 
@@ -81,7 +83,10 @@ fun HomeScreen(
 
                     items(medicines) {
 
-                        MedicineCard(it)
+                        MedicineCard(
+                            medicine = it,
+                            fontFamily = com.example.test.ui.theme.Vazir
+                        )
                     }
                 }
             }
