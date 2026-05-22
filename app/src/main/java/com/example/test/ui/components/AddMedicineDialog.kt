@@ -1,11 +1,14 @@
-```kotlin
 package com.example.test.ui.components
 
 import android.app.TimePickerDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -18,8 +21,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.test.ui.theme.Vazir
 import java.util.Calendar
 
@@ -35,25 +38,41 @@ fun AddMedicineDialog(
         mutableStateOf("")
     }
 
-    var medicineTime by remember {
-        mutableStateOf("")
+    var selectedTime by remember {
+        mutableStateOf("انتخاب ساعت")
     }
 
-    AlertDialog(
+    val calendar = Calendar.getInstance()
 
+    val timePickerDialog = TimePickerDialog(
+        context,
+        { _, hour, minute ->
+
+            val formattedHour =
+                hour.toString().padStart(2, '0')
+
+            val formattedMinute =
+                minute.toString().padStart(2, '0')
+
+            selectedTime = "$formattedHour:$formattedMinute"
+        },
+        calendar.get(Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        true
+    )
+
+    AlertDialog(
         onDismissRequest = onDismiss,
 
-        containerColor = Color(0xFF111827),
+        containerColor = Color(0xFF0F172A),
 
         shape = RoundedCornerShape(28.dp),
 
         title = {
-
             Text(
                 text = "افزودن دارو",
                 color = Color.White,
-                fontFamily = Vazir,
-                fontSize = 22.sp
+                fontFamily = Vazir
             )
         },
 
@@ -62,7 +81,6 @@ fun AddMedicineDialog(
             Column {
 
                 OutlinedTextField(
-
                     value = medicineName,
 
                     onValueChange = {
@@ -71,12 +89,7 @@ fun AddMedicineDialog(
 
                     modifier = Modifier.fillMaxWidth(),
 
-                    singleLine = true,
-
-                    shape = RoundedCornerShape(18.dp),
-
                     label = {
-
                         Text(
                             text = "نام دارو",
                             color = Color(0xFFCBD5E1),
@@ -90,43 +103,22 @@ fun AddMedicineDialog(
                         unfocusedTextColor = Color.White,
 
                         focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color(0xFF334155),
+                        unfocusedBorderColor = Color(0xFF475569),
 
                         focusedLabelColor = Color(0xFF22C55E),
-                        unfocusedLabelColor = Color(0xFF94A3B8),
+                        unfocusedLabelColor = Color(0xFFCBD5E1),
 
                         cursorColor = Color.White
-                    )
+                    ),
+
+                    shape = RoundedCornerShape(18.dp)
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
-
                     onClick = {
-
-                        val calendar = Calendar.getInstance()
-
-                        TimePickerDialog(
-
-                            context,
-
-                            { _, hour, minute ->
-
-                                medicineTime =
-                                    String.format(
-                                        "%02d:%02d",
-                                        hour,
-                                        minute
-                                    )
-                            },
-
-                            calendar.get(Calendar.HOUR_OF_DAY),
-                            calendar.get(Calendar.MINUTE),
-
-                            true
-
-                        ).show()
+                        timePickerDialog.show()
                     },
 
                     modifier = Modifier.fillMaxWidth(),
@@ -139,15 +131,8 @@ fun AddMedicineDialog(
                 ) {
 
                     Text(
-
-                        text =
-                            if (medicineTime.isEmpty())
-                                "انتخاب ساعت"
-                            else
-                                "⏰ $medicineTime",
-
+                        text = selectedTime,
                         color = Color.White,
-
                         fontFamily = Vazir
                     )
                 }
@@ -156,50 +141,50 @@ fun AddMedicineDialog(
 
         confirmButton = {
 
-            Button(
-
-                onClick = {
-
-                    if (
-                        medicineName.isNotBlank() &&
-                        medicineTime.isNotBlank()
-                    ) {
-
-                        onAdd(
-                            medicineName.trim(),
-                            medicineTime.trim()
-                        )
-                    }
-                },
-
-                shape = RoundedCornerShape(16.dp),
-
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF22C55E)
-                )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                Text(
-                    text = "ثبت",
-                    color = Color.White,
-                    fontFamily = Vazir
-                )
-            }
-        },
+                Button(
+                    onClick = {
 
-        dismissButton = {
+                        if (
+                            medicineName.isNotBlank() &&
+                            selectedTime != "انتخاب ساعت"
+                        ) {
 
-            TextButton(
-                onClick = onDismiss
-            ) {
+                            onAdd(
+                                medicineName,
+                                selectedTime
+                            )
+                        }
+                    },
 
-                Text(
-                    text = "لغو",
-                    color = Color(0xFFCBD5E1),
-                    fontFamily = Vazir
-                )
+                    shape = RoundedCornerShape(16.dp),
+
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF22C55E)
+                    )
+                ) {
+
+                    Text(
+                        text = "ثبت",
+                        color = Color.White,
+                        fontFamily = Vazir
+                    )
+                }
+
+                TextButton(
+                    onClick = onDismiss
+                ) {
+
+                    Text(
+                        text = "لغو",
+                        color = Color(0xFFCBD5E1),
+                        fontFamily = Vazir
+                    )
+                }
             }
         }
     )
 }
-```
