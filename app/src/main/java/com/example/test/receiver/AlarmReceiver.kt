@@ -16,7 +16,8 @@ class AlarmReceiver : BroadcastReceiver() {
     ) {
 
         val medicineName =
-            intent.getStringExtra("medicine") ?: "دارو"
+            intent.getStringExtra("medicine")
+                ?: "دارو"
 
         val channelId = "medicine_channel"
 
@@ -38,7 +39,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 context,
                 channelId
             )
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("زمان مصرف دارو")
                 .setContentText(medicineName)
                 .setPriority(
