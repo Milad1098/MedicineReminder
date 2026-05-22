@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.net.Uri
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.test.AlarmActivity
 import com.example.test.R
@@ -29,55 +30,59 @@ class AlarmReceiver : BroadcastReceiver() {
             "android.resource://${context.packageName}/${R.raw.alarm}"
         )
 
-        val attributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .build()
-
         val manager =
             context.getSystemService(
                 Context.NOTIFICATION_SERVICE
             ) as NotificationManager
 
-        val channel = NotificationChannel(
-            channelId,
-            "Medicine Alarm",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-            description = "Medicine alarm channel"
+            val attributes =
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .build()
 
-            enableVibration(true)
+            val channel =
+                NotificationChannel(
+                    channelId,
+                    "Medicine Alarm",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
 
-            vibrationPattern = longArrayOf(
-                0,
-                1000,
-                1000,
-                1000
-            )
+                    enableVibration(true)
 
-            setSound(soundUri, attributes)
+                    vibrationPattern = longArrayOf(
+                        0,
+                        1000,
+                        1000,
+                        1000
+                    )
 
-            lockscreenVisibility =
-                android.app.Notification.VISIBILITY_PUBLIC
+                    setSound(soundUri, attributes)
+
+                    lockscreenVisibility =
+                        android.app.Notification.VISIBILITY_PUBLIC
+                }
+
+            manager.createNotificationChannel(channel)
         }
 
-        manager.createNotificationChannel(channel)
-
-        val fullScreenIntent =
+        val activityIntent =
             Intent(context, AlarmActivity::class.java).apply {
 
                 flags =
                     Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP
 
                 putExtra("medicine", medicineName)
             }
 
-        val fullScreenPendingIntent =
+        val pendingIntent =
             PendingIntent.getActivity(
                 context,
-                111,
-                fullScreenIntent,
+                100,
+                activityIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or
                         PendingIntent.FLAG_IMMUTABLE
             )
@@ -91,16 +96,22 @@ class AlarmReceiver : BroadcastReceiver() {
                 .setContentTitle("⏰ زمان مصرف دارو")
                 .setContentText("$medicineName را مصرف کن")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setFullScreenIntent(
-                    fullScreenPendingIntent,
+                    pendingIntent,
                     true
                 )
                 .build()
 
         manager.notify(999, notification)
+
+        /*
+            مهم‌ترین بخش
+         */
+
+        context.startActivity(activityIntent)
     }
 }
