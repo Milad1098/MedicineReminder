@@ -1,22 +1,19 @@
 package com.example.test.ui.components
 
 import android.app.TimePickerDialog
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.TimePickerDefaults.colors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.TextFieldDefaults
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.test.ui.theme.Vazir
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMedicineDialog(
     onDismiss: () -> Unit,
@@ -33,18 +30,18 @@ fun AddMedicineDialog(
         mutableStateOf("")
     }
 
-    val calendar = Calendar.getInstance()
-
     AlertDialog(
-        onDismissRequest = onDismiss,
 
-        shape = RoundedCornerShape(28.dp),
+        onDismissRequest = onDismiss,
 
         containerColor = Color(0xFF111827),
 
+        shape = RoundedCornerShape(28.dp),
+
         title = {
+
             Text(
-                text = "افزودن داروی جدید",
+                text = "افزودن دارو",
                 color = Color.White,
                 fontFamily = Vazir,
                 fontSize = 22.sp
@@ -56,6 +53,7 @@ fun AddMedicineDialog(
             Column {
 
                 OutlinedTextField(
+
                     value = medicineName,
 
                     onValueChange = {
@@ -65,6 +63,7 @@ fun AddMedicineDialog(
                     modifier = Modifier.fillMaxWidth(),
 
                     label = {
+
                         Text(
                             "نام دارو",
                             color = Color(0xFFCBD5E1),
@@ -83,26 +82,30 @@ fun AddMedicineDialog(
 
                     colors = OutlinedTextFieldDefaults.colors(
 
-                        focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color(0xFF334155),
-
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
+
+                        focusedBorderColor = Color(0xFF22C55E),
+                        unfocusedBorderColor = Color(0xFF334155),
 
                         cursorColor = Color.White,
 
                         focusedLabelColor = Color(0xFF22C55E),
                         unfocusedLabelColor = Color(0xFF94A3B8)
                     )
-                )
+                }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Button(
+
                     onClick = {
+
+                        val calendar = Calendar.getInstance()
 
                         TimePickerDialog(
                             context,
+
                             { _, hour, minute ->
 
                                 medicineTime =
@@ -112,8 +115,10 @@ fun AddMedicineDialog(
                                         minute
                                     )
                             },
+
                             calendar.get(Calendar.HOUR_OF_DAY),
                             calendar.get(Calendar.MINUTE),
+
                             true
                         ).show()
                     },
@@ -128,9 +133,10 @@ fun AddMedicineDialog(
                 ) {
 
                     Text(
+
                         text =
                             if (medicineTime.isEmpty())
-                                "انتخاب ساعت مصرف"
+                                "انتخاب ساعت"
                             else
                                 "⏰ $medicineTime",
 
@@ -153,16 +159,10 @@ fun AddMedicineDialog(
                         medicineTime.isNotBlank()
                     ) {
 
-                        try {
-
-                            onAdd(
-                                medicineName.trim(),
-                                medicineTime.trim()
-                            )
-
-                        } catch (_: Exception) {
-
-                        }
+                        onAdd(
+                            medicineName.trim(),
+                            medicineTime.trim()
+                        )
                     }
                 },
 
@@ -174,7 +174,7 @@ fun AddMedicineDialog(
             ) {
 
                 Text(
-                    text = "ثبت دارو",
+                    text = "ثبت",
                     color = Color.White,
                     fontFamily = Vazir
                 )
