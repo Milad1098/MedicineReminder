@@ -82,10 +82,11 @@ fun MedicineCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "⏰ ${medicine.time}",
-                    color = Color(0xFFCBD5E1),
-                    fontFamily = fontFamily,
-                    fontSize = 15.sp
+                    text = String.format(
+                    "%02d:%02d",
+                    medicine.hour,
+                    medicine.minute
+                )
                 )
             }
         }
