@@ -2,15 +2,28 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- مجوز نوتیف -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- ویبره -->
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- آلارم دقیق -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- روشن شدن بعد از ری‌استارت -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- فول اسکرین -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:allowBackup="true"
         android:label="یادآور دارو"
         android:supportsRtl="true"
         android:theme="@style/Theme.Test">
+
+        <!-- MAIN ACTIVITY -->
 
         <activity
             android:name=".MainActivity"
@@ -25,6 +38,18 @@
             </intent-filter>
 
         </activity>
+
+        <!-- صفحه آلارم فول اسکرین -->
+
+        <activity
+            android:name=".AlarmActivity"
+            android:exported="false"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
+
+        <!-- دریافت آلارم -->
 
         <receiver
             android:name=".receiver.AlarmReceiver"
