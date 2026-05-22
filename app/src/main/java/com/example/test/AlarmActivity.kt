@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.test.ui.theme.TestTheme
 import com.example.test.R
 
 class AlarmActivity : ComponentActivity() {
@@ -33,35 +36,35 @@ class AlarmActivity : ComponentActivity() {
             intent.getStringExtra("medicine")
                 ?: "دارو"
 
-        mediaPlayer =
-            MediaPlayer.create(
-                this,
-                R.raw.alarm
-            )
+        mediaPlayer = MediaPlayer.create(
+            this,
+            R.raw.alarm
+        )
 
         mediaPlayer?.isLooping = true
         mediaPlayer?.start()
 
         setContent {
 
-            AlarmScreen(
-                medicineName = medicineName,
-                onDismiss = {
+            TestTheme {
 
-                    mediaPlayer?.stop()
-                    mediaPlayer?.release()
+                AlarmScreen(
+                    medicineName = medicineName,
+                    onDismiss = {
 
-                    finish()
-                }
-            )
+                        mediaPlayer?.stop()
+                        mediaPlayer?.release()
+                        finish()
+                    }
+                )
+            }
         }
     }
 
     override fun onDestroy() {
+        super.onDestroy()
 
         mediaPlayer?.release()
-
-        super.onDestroy()
     }
 }
 
@@ -70,6 +73,10 @@ fun AlarmScreen(
     medicineName: String,
     onDismiss: () -> Unit
 ) {
+
+    DisposableEffect(Unit) {
+        onDispose { }
+    }
 
     Column(
         modifier = Modifier
@@ -84,18 +91,18 @@ fun AlarmScreen(
         Text(
             text = "⏰ زمان مصرف دارو",
             color = Color.White,
-            fontSize = 32.sp,
+            fontSize = 30.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(
-            modifier = Modifier.height(24.dp)
+            modifier = Modifier.height(20.dp)
         )
 
         Text(
             text = medicineName,
             color = Color(0xFF22C55E),
-            fontSize = 28.sp,
+            fontSize = 42.sp,
             fontWeight = FontWeight.Bold
         )
 
