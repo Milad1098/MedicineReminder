@@ -2,7 +2,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- مجوز نوتیف -->
+    <!-- نوتیفیکیشن -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- ویبره -->
@@ -11,7 +11,7 @@
     <!-- آلارم دقیق -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
-    <!-- روشن شدن بعد از ری‌استارت -->
+    <!-- بعد از ری‌استارت گوشی -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- فول اسکرین -->
@@ -23,7 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Test">
 
-        <!-- MAIN ACTIVITY -->
+        <!-- صفحه اصلی -->
 
         <activity
             android:name=".MainActivity"
@@ -39,7 +39,7 @@
 
         </activity>
 
-        <!-- صفحه آلارم فول اسکرین -->
+        <!-- صفحه آلارم -->
 
         <activity
             android:name=".AlarmActivity"
@@ -47,7 +47,7 @@
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
+            android:theme="@style/Theme.Test" />
 
         <!-- دریافت آلارم -->
 
