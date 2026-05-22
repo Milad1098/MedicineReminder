@@ -8,6 +8,9 @@
         android:allowBackup="true"
         android:label="یادآور دارو"
         android:supportsRtl="true"
+        <receiver
+            android:name=".receiver.AlarmReceiver"
+            android:exported="false"/>
         android:theme="@style/Theme.Test">
 
         <activity
