@@ -121,14 +121,23 @@ fun HomeScreen(db: AppDatabase) {
                 showDialog = false
             },
             onAdd = { name, time ->
-                scope.launch {
-                    dao.insert(
-                        Medicine(
-                            name = name,
-                            time = time
+               scope.launch {
+
+                    try {
+                
+                        dao.insert(
+                            Medicine(
+                                name = name.trim(),
+                                time = time.trim()
+                            )
                         )
-                    )
-                    medicines = dao.getAll()
+                
+                        medicines = dao.getAll()
+                
+                    } catch (e: Exception) {
+                
+                        e.printStackTrace()
+                    }
                 }
                 showDialog = false
             }
