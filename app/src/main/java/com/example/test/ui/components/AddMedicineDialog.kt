@@ -1,18 +1,27 @@
+```kotlin
 package com.example.test.ui.components
 
 import android.app.TimePickerDialog
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldDefaults
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.test.ui.theme.Vazir
-import java.util.*
+import java.util.Calendar
 
 @Composable
 fun AddMedicineDialog(
@@ -62,23 +71,18 @@ fun AddMedicineDialog(
 
                     modifier = Modifier.fillMaxWidth(),
 
+                    singleLine = true,
+
+                    shape = RoundedCornerShape(18.dp),
+
                     label = {
 
                         Text(
-                            "نام دارو",
+                            text = "نام دارو",
                             color = Color(0xFFCBD5E1),
                             fontFamily = Vazir
                         )
                     },
-
-                    textStyle = LocalTextStyle.current.copy(
-                        color = Color.White,
-                        fontFamily = Vazir
-                    ),
-
-                    singleLine = true,
-
-                    shape = RoundedCornerShape(18.dp),
 
                     colors = OutlinedTextFieldDefaults.colors(
 
@@ -88,12 +92,12 @@ fun AddMedicineDialog(
                         focusedBorderColor = Color(0xFF22C55E),
                         unfocusedBorderColor = Color(0xFF334155),
 
-                        cursorColor = Color.White,
-
                         focusedLabelColor = Color(0xFF22C55E),
-                        unfocusedLabelColor = Color(0xFF94A3B8)
+                        unfocusedLabelColor = Color(0xFF94A3B8),
+
+                        cursorColor = Color.White
                     )
-                }
+                )
 
                 Spacer(modifier = Modifier.height(18.dp))
 
@@ -104,6 +108,7 @@ fun AddMedicineDialog(
                         val calendar = Calendar.getInstance()
 
                         TimePickerDialog(
+
                             context,
 
                             { _, hour, minute ->
@@ -120,6 +125,7 @@ fun AddMedicineDialog(
                             calendar.get(Calendar.MINUTE),
 
                             true
+
                         ).show()
                     },
 
@@ -196,3 +202,4 @@ fun AddMedicineDialog(
         }
     )
 }
+```
