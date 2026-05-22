@@ -20,10 +20,8 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java,
             "medicine_db"
         )
-
-            .fallbackToDestructiveMigration()
-
-            .build()
+        .fallbackToDestructiveMigration()
+        .build()
 
         setContent {
 
