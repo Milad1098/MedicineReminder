@@ -1,6 +1,5 @@
 package com.example.test.ui.screens
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,11 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.test.alarm.scheduleMedicineAlarm
 import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
-import com.example.test.receiver.AlarmScheduler
 import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.HeaderSection
@@ -39,11 +37,11 @@ import com.example.test.ui.theme.Vazir
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(db: AppDatabase) {
+fun HomeScreen(
+    db: AppDatabase
+) {
 
     val dao = db.medicineDao()
-
-    val context = LocalContext.current
 
     var medicines by remember {
         mutableStateOf(listOf<Medicine>())
@@ -51,6 +49,10 @@ fun HomeScreen(db: AppDatabase) {
 
     var showDialog by remember {
         mutableStateOf(false)
+    }
+
+    var editingMedicine by remember {
+        mutableStateOf<Medicine?>(null)
     }
 
     val scope = rememberCoroutineScope()
@@ -79,28 +81,53 @@ fun HomeScreen(db: AppDatabase) {
             modifier = Modifier.fillMaxSize()
         ) {
 
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(
+                modifier = Modifier.height(50.dp)
+            )
 
             HeaderSection()
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
 
             if (medicines.isEmpty()) {
 
-                EmptyState(fontFamily = Vazir)
+                EmptyState(
+                    fontFamily = Vazir
+                )
 
             } else {
 
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 120.dp)
+                    verticalArrangement =
+                        Arrangement.spacedBy(16.dp),
+
+                    contentPadding =
+                        PaddingValues(bottom = 120.dp)
                 ) {
 
                     items(medicines) { medicine ->
 
                         MedicineCard(
                             medicine = medicine,
-                            fontFamily = Vazir
+                            fontFamily = Vazir,
+
+                            onEdit = {
+                                editingMedicine = medicine
+                                showDialog = true
+                            },
+
+                            onDelete = {
+
+                                scope.launch {
+
+                                    dao.delete(medicine)
+
+                                    medicines =
+                                        dao.getAll()
+                                }
+                            }
                         )
                     }
                 }
@@ -109,11 +136,18 @@ fun HomeScreen(db: AppDatabase) {
 
         FloatingActionButton(
             onClick = {
+
+                editingMedicine = null
                 showDialog = true
             },
+
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 6.dp, bottom = 24.dp),
+                .padding(
+                    start = 6.dp,
+                    bottom = 24.dp
+                ),
+
             containerColor = Color(0xFF22C55E),
             contentColor = Color.White
         ) {
@@ -128,39 +162,48 @@ fun HomeScreen(db: AppDatabase) {
     if (showDialog) {
 
         AddMedicineDialog(
+            medicine = editingMedicine,
 
             onDismiss = {
+
                 showDialog = false
+                editingMedicine = null
             },
 
             onAdd = { name, time ->
 
                 scope.launch {
 
-                    try {
+                    if (editingMedicine == null) {
 
                         val medicine = Medicine(
-                            name = name.trim(),
-                            time = time.trim()
+                            name = name,
+                            time = time
                         )
 
                         dao.insert(medicine)
 
-                        AlarmScheduler.scheduleAlarm(
-                            context = context,
-                            medicineName = medicine.name,
-                            time = medicine.time
+                        scheduleMedicineAlarm(
+                            context = db.context,
+                            medicineName = name,
+                            time = time
                         )
 
-                        medicines = dao.getAll()
+                    } else {
 
-                    } catch (e: Exception) {
-
-                        e.printStackTrace()
+                        dao.update(
+                            editingMedicine!!.copy(
+                                name = name,
+                                time = time
+                            )
+                        )
                     }
-                }
 
-                showDialog = false
+                    medicines = dao.getAll()
+
+                    showDialog = false
+                    editingMedicine = null
+                }
             }
         )
     }
