@@ -1,25 +1,30 @@
 package com.example.test
 
-import android.app.Activity
-import android.graphics.Color
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
 import android.os.Vibrator
-import android.view.Gravity
-import android.view.WindowManager
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.Space
-import android.widget.TextView
+import android.os.VibratorManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
-class AlarmActivity : Activity() {
+class AlarmActivity : ComponentActivity() {
 
     private var mediaPlayer: MediaPlayer? = null
-    private var vibrator: Vibrator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         val medicineName =
@@ -27,106 +32,90 @@ class AlarmActivity : Activity() {
                 ?: "دارو"
 
         mediaPlayer =
-            MediaPlayer.create(this, R.raw.alarm)
+            MediaPlayer.create(
+                this,
+                R.raw.alarm
+            )
 
         mediaPlayer?.isLooping = true
         mediaPlayer?.start()
 
-        vibrator =
-            getSystemService(VIBRATOR_SERVICE) as Vibrator
+        val vibrator =
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val vibratorManager =
+                    getSystemService(
+                        VIBRATOR_MANAGER_SERVICE
+                    ) as VibratorManager
 
-            vibrator?.vibrate(
-                VibrationEffect.createWaveform(
-                    longArrayOf(0, 1000, 1000),
-                    0
+                vibratorManager.defaultVibrator
+
+            } else {
+
+                getSystemService(VIBRATOR_SERVICE) as Vibrator
+            }
+
+        vibrator.vibrate(
+            longArrayOf(
+                0,
+                1000,
+                1000
+            ),
+            0
+        )
+
+        setContent {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(24.dp),
+
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = "⏰ زمان مصرف دارو",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White
                 )
-            )
 
-        } else {
+                androidx.compose.foundation.layout.Spacer(
+                    modifier = Modifier.padding(12.dp)
+                )
 
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(
-                longArrayOf(0, 1000, 1000),
-                0
-            )
+                Text(
+                    text = medicineName,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.Green
+                )
+
+                androidx.compose.foundation.layout.Spacer(
+                    modifier = Modifier.padding(24.dp)
+                )
+
+                Button(
+                    onClick = {
+
+                        mediaPlayer?.stop()
+
+                        vibrator.cancel()
+
+                        finish()
+                    }
+                ) {
+
+                    Text("مصرف شد")
+                }
+            }
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-
-            setShowWhenLocked(true)
-            setTurnScreenOn(true)
-
-        } else {
-
-            window.addFlags(
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-            )
-        }
-
-        val root = LinearLayout(this)
-        root.orientation = LinearLayout.VERTICAL
-        root.gravity = Gravity.CENTER
-        root.setBackgroundColor(
-            Color.parseColor("#0F172A")
-        )
-        root.setPadding(50, 50, 50, 50)
-
-        val title = TextView(this)
-        title.text = "⏰ زمان مصرف دارو"
-        title.textSize = 28f
-        title.setTextColor(Color.WHITE)
-
-        val medicine = TextView(this)
-        medicine.text = medicineName
-        medicine.textSize = 42f
-        medicine.setTextColor(
-            Color.parseColor("#22C55E")
-        )
-
-        val button = Button(this)
-        button.text = "متوجه شدم"
-
-        button.setOnClickListener {
-
-            mediaPlayer?.stop()
-            mediaPlayer?.release()
-
-            vibrator?.cancel()
-
-            finish()
-        }
-
-        val space1 = Space(this)
-        space1.layoutParams =
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                40
-            )
-
-        val space2 = Space(this)
-        space2.layoutParams =
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                60
-            )
-
-        root.addView(title)
-        root.addView(space1)
-        root.addView(medicine)
-        root.addView(space2)
-        root.addView(button)
-
-        setContentView(root)
     }
 
     override fun onDestroy() {
 
         mediaPlayer?.release()
-        vibrator?.cancel()
 
         super.onDestroy()
     }
