@@ -12,16 +12,18 @@ import com.example.test.ui.screens.HomeScreen
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var db: AppDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = Room.databaseBuilder(
+        db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
             "medicine_db"
         )
-        .fallbackToDestructiveMigration()
-        .build()
+            .fallbackToDestructiveMigration()
+            .build()
 
         setContent {
 
@@ -29,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 LocalLayoutDirection provides LayoutDirection.Rtl
             ) {
 
-                HomeScreen(db)
+                HomeScreen(db = db)
             }
         }
     }
