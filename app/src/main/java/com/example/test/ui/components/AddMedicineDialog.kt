@@ -26,14 +26,19 @@ fun AddMedicineDialog(
     val context = LocalContext.current
 
     var name by remember {
-        mutableStateOf(medicine?.name ?: "")
+        mutableStateOf(
+            medicine?.name ?: ""
+        )
     }
 
     var time by remember {
-        mutableStateOf(medicine?.time ?: "")
+        mutableStateOf(
+            medicine?.time ?: ""
+        )
     }
 
     AlertDialog(
+
         onDismissRequest = onDismiss,
 
         confirmButton = {
@@ -45,6 +50,7 @@ fun AddMedicineDialog(
                         name.isNotBlank() &&
                         time.isNotBlank()
                     ) {
+
                         onAdd(name, time)
                     }
                 }
@@ -85,28 +91,37 @@ fun AddMedicineDialog(
 
                 OutlinedTextField(
                     value = name,
+
                     onValueChange = {
                         name = it
                     },
+
                     label = {
                         Text("نام دارو")
                     },
-                    modifier = Modifier.fillMaxWidth()
+
+                    modifier = Modifier
+                        .fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = time,
+
                     onValueChange = {},
+
                     readOnly = true,
+
                     label = {
                         Text("زمان مصرف")
                     },
+
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 )
 
                 Button(
+
                     onClick = {
 
                         val calendar =
@@ -115,6 +130,7 @@ fun AddMedicineDialog(
                         val dialog =
                             TimePickerDialog(
                                 context,
+
                                 { _, hour, minute ->
 
                                     time =
@@ -124,14 +140,23 @@ fun AddMedicineDialog(
                                             minute
                                         )
                                 },
-                                calendar.get(Calendar.HOUR_OF_DAY),
-                                calendar.get(Calendar.MINUTE),
+
+                                calendar.get(
+                                    Calendar.HOUR_OF_DAY
+                                ),
+
+                                calendar.get(
+                                    Calendar.MINUTE
+                                ),
+
                                 true
                             )
 
                         dialog.show()
                     },
-                    modifier = Modifier.padding(top = 12.dp)
+
+                    modifier = Modifier
+                        .padding(top = 12.dp)
                 ) {
 
                     Text("انتخاب ساعت")
