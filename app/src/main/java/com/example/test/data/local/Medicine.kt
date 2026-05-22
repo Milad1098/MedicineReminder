@@ -3,7 +3,7 @@ package com.example.test.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "medicines")
+@Entity
 data class Medicine(
 
     @PrimaryKey(autoGenerate = true)
