@@ -1,5 +1,6 @@
 package com.example.test.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,10 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.room.Room
 import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
+import com.example.test.receiver.AlarmScheduler
 import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.HeaderSection
@@ -40,6 +42,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(db: AppDatabase) {
 
     val dao = db.medicineDao()
+
+    val context = LocalContext.current
 
     var medicines by remember {
         mutableStateOf(listOf<Medicine>())
@@ -82,13 +86,18 @@ fun HomeScreen(db: AppDatabase) {
             Spacer(modifier = Modifier.height(28.dp))
 
             if (medicines.isEmpty()) {
+
                 EmptyState(fontFamily = Vazir)
+
             } else {
+
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(bottom = 120.dp)
                 ) {
+
                     items(medicines) { medicine ->
+
                         MedicineCard(
                             medicine = medicine,
                             fontFamily = Vazir
@@ -108,6 +117,7 @@ fun HomeScreen(db: AppDatabase) {
             containerColor = Color(0xFF22C55E),
             contentColor = Color.White
         ) {
+
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = null
@@ -116,29 +126,40 @@ fun HomeScreen(db: AppDatabase) {
     }
 
     if (showDialog) {
+
         AddMedicineDialog(
+
             onDismiss = {
                 showDialog = false
             },
+
             onAdd = { name, time ->
-               scope.launch {
+
+                scope.launch {
 
                     try {
-                
-                        dao.insert(
-                            Medicine(
-                                name = name.trim(),
-                                time = time.trim()
-                            )
+
+                        val medicine = Medicine(
+                            name = name.trim(),
+                            time = time.trim()
                         )
-                
+
+                        dao.insert(medicine)
+
+                        AlarmScheduler.scheduleAlarm(
+                            context = context,
+                            medicineName = medicine.name,
+                            time = medicine.time
+                        )
+
                         medicines = dao.getAll()
-                
+
                     } catch (e: Exception) {
-                
+
                         e.printStackTrace()
                     }
                 }
+
                 showDialog = false
             }
         )
