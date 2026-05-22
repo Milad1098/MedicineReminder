@@ -1,122 +1,142 @@
 package com.example.test
 
+import android.app.Activity
+import android.graphics.Color
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.test.ui.theme.TestTheme
-import com.example.test.R
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.view.Gravity
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.Space
+import android.widget.TextView
 
-class AlarmActivity : ComponentActivity() {
+class AlarmActivity : Activity() {
 
     private var mediaPlayer: MediaPlayer? = null
+    private var vibrator: Vibrator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val medicineName =
-            intent.getStringExtra("medicine")
-                ?: "دارو"
+        val medicineName = intent.getStringExtra("medicine") ?: "دارو"
 
-        mediaPlayer = MediaPlayer.create(
-            this,
-            R.raw.alarm
-        )
+        keepScreenOn()
 
-        mediaPlayer?.isLooping = true
-        mediaPlayer?.start()
+        mediaPlayer = MediaPlayer.create(this, R.raw.alarm).apply {
+            isLooping = true
+            start()
+        }
 
-        setContent {
+        vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        startVibration()
 
-            TestTheme {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.parseColor("#0F172A"))
+            setPadding(48, 48, 48, 48)
+        }
 
-                AlarmScreen(
-                    medicineName = medicineName,
-                    onDismiss = {
+        val title = TextView(this).apply {
+            text = "زمان مصرف دارو"
+            setTextColor(Color.WHITE)
+            textSize = 30f
+            gravity = Gravity.CENTER
+        }
 
-                        mediaPlayer?.stop()
-                        mediaPlayer?.release()
-                        finish()
-                    }
-                )
+        val medicineText = TextView(this).apply {
+            text = medicineName
+            setTextColor(Color.parseColor("#22C55E"))
+            textSize = 40f
+            gravity = Gravity.CENTER
+        }
+
+        val button = Button(this).apply {
+            text = "متوجه شدم"
+            setOnClickListener {
+                stopAlarm()
+                finish()
             }
+        }
+
+        val space1 = Space(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                40
+            )
+        }
+
+        val space2 = Space(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                48
+            )
+        }
+
+        root.addView(title)
+        root.addView(space1)
+        root.addView(medicineText)
+        root.addView(space2)
+        root.addView(button)
+
+        setContentView(root)
+    }
+
+    private fun keepScreenOn() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+            )
+        }
+    }
+
+    private fun startVibration() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(
+                    VibrationEffect.createWaveform(
+                        longArrayOf(0, 1000, 1000),
+                        0
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(longArrayOf(0, 1000, 1000), 0)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun stopAlarm() {
+        try {
+            mediaPlayer?.let { player ->
+                if (player.isPlaying) {
+                    player.stop()
+                }
+                player.release()
+            }
+        } catch (_: Exception) {
+        }
+        mediaPlayer = null
+
+        try {
+            vibrator?.cancel()
+        } catch (_: Exception) {
         }
     }
 
     override fun onDestroy() {
+        stopAlarm()
         super.onDestroy()
-
-        mediaPlayer?.release()
-    }
-}
-
-@Composable
-fun AlarmScreen(
-    medicineName: String,
-    onDismiss: () -> Unit
-) {
-
-    DisposableEffect(Unit) {
-        onDispose { }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF0F172A))
-            .padding(24.dp),
-
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Text(
-            text = "⏰ زمان مصرف دارو",
-            color = Color.White,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(
-            modifier = Modifier.height(20.dp)
-        )
-
-        Text(
-            text = medicineName,
-            color = Color(0xFF22C55E),
-            fontSize = 42.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(
-            modifier = Modifier.height(40.dp)
-        )
-
-        Button(
-            onClick = onDismiss
-        ) {
-
-            Text(
-                text = "متوجه شدم"
-            )
-        }
     }
 }
