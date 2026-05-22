@@ -11,7 +11,6 @@ import androidx.activity.compose.setContent
 import androidx.room.Room
 import com.example.test.data.local.AppDatabase
 import com.example.test.ui.screens.HomeScreen
-import com.example.test.ui.theme.TestTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -50,10 +49,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            TestTheme {
-
-                HomeScreen(db = db)
-            }
+            HomeScreen(db = db)
         }
     }
 }
