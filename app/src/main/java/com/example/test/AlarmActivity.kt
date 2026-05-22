@@ -1,5 +1,9 @@
 package com.example.test
 
+import android.media.MediaPlayer
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +28,7 @@ class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val medicine =
+        val medicineName =
             intent.getStringExtra("medicine")
                 ?: "دارو"
 
@@ -37,64 +41,74 @@ class AlarmActivity : ComponentActivity() {
         mediaPlayer?.isLooping = true
         mediaPlayer?.start()
 
-        val vibrator =
-            getSystemService(VIBRATOR_MANAGER_SERVICE)
-                    as VibratorManager
-
-        vibrator.defaultVibrator.vibrate(
-            android.os.VibrationEffect.createOneShot(
-                1000,
-                255
-            )
-        )
-
         setContent {
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF0F172A)),
-                contentAlignment = Alignment.Center
-            ) {
+            AlarmScreen(
+                medicineName = medicineName,
+                onDismiss = {
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
 
-                    Text(
-                        text = "زمان مصرف دارو",
-                        color = Color.White,
-                        fontSize = 32.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = medicine,
-                        color = Color(0xFF22C55E),
-                        fontSize = 42.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(40.dp))
-
-                    Button(
-                        onClick = {
-
-                            mediaPlayer?.stop()
-                            finish()
-                        }
-                    ) {
-
-                        Text("متوقف کردن")
-                    }
+                    finish()
                 }
-            }
+            )
         }
     }
 
     override fun onDestroy() {
-        super.onDestroy()
 
         mediaPlayer?.release()
+
+        super.onDestroy()
+    }
+}
+
+@Composable
+fun AlarmScreen(
+    medicineName: String,
+    onDismiss: () -> Unit
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0F172A))
+            .padding(24.dp),
+
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text(
+            text = "⏰ زمان مصرف دارو",
+            color = Color.White,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(
+            modifier = Modifier.height(24.dp)
+        )
+
+        Text(
+            text = medicineName,
+            color = Color(0xFF22C55E),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(
+            modifier = Modifier.height(40.dp)
+        )
+
+        Button(
+            onClick = onDismiss
+        ) {
+
+            Text(
+                text = "متوجه شدم"
+            )
+        }
     }
 }
