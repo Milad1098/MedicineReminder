@@ -11,6 +11,11 @@ import androidx.activity.compose.setContent
 import androidx.room.Room
 import com.example.test.data.local.AppDatabase
 import com.example.test.ui.screens.HomeScreen
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
 
 class MainActivity : ComponentActivity() {
 
@@ -49,7 +54,18 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            HomeScreen(db = db)
+            CompositionLocalProvider(
+                LocalLayoutDirection provides LayoutDirection.Rtl
+            ) {
+        
+                MaterialTheme {
+        
+                    Surface {
+        
+                        HomeScreen(db)
+                    }
+                }
+            }
         }
     }
 }
