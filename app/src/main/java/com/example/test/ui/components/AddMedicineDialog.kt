@@ -1,78 +1,81 @@
 package com.example.test.ui.components
 
 import android.app.TimePickerDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.example.test.ui.theme.Vazir
+import com.example.test.data.local.Medicine
 import java.util.Calendar
 
 @Composable
 fun AddMedicineDialog(
+    medicine: Medicine? = null,
     onDismiss: () -> Unit,
     onAdd: (String, String) -> Unit
 ) {
 
     val context = LocalContext.current
 
-    var medicineName by remember {
-        mutableStateOf("")
+    var name by remember {
+        mutableStateOf(medicine?.name ?: "")
     }
 
-    var selectedTime by remember {
-        mutableStateOf("انتخاب ساعت")
+    var time by remember {
+        mutableStateOf(medicine?.time ?: "")
     }
-
-    val calendar = Calendar.getInstance()
-
-    val timePickerDialog = TimePickerDialog(
-        context,
-        { _, hour, minute ->
-
-            val formattedHour =
-                hour.toString().padStart(2, '0')
-
-            val formattedMinute =
-                minute.toString().padStart(2, '0')
-
-            selectedTime = "$formattedHour:$formattedMinute"
-        },
-        calendar.get(Calendar.HOUR_OF_DAY),
-        calendar.get(Calendar.MINUTE),
-        true
-    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
 
-        containerColor = Color(0xFF0F172A),
+        confirmButton = {
 
-        shape = RoundedCornerShape(28.dp),
+            Button(
+                onClick = {
+
+                    if (
+                        name.isNotBlank() &&
+                        time.isNotBlank()
+                    ) {
+                        onAdd(name, time)
+                    }
+                }
+            ) {
+
+                Text(
+                    if (medicine == null)
+                        "افزودن"
+                    else
+                        "ویرایش"
+                )
+            }
+        },
+
+        dismissButton = {
+
+            OutlinedButton(
+                onClick = onDismiss
+            ) {
+
+                Text("لغو")
+            }
+        },
 
         title = {
+
             Text(
-                text = "افزودن دارو",
-                color = Color.White,
-                fontFamily = Vazir
+                if (medicine == null)
+                    "داروی جدید"
+                else
+                    "ویرایش دارو"
             )
         },
 
@@ -81,108 +84,57 @@ fun AddMedicineDialog(
             Column {
 
                 OutlinedTextField(
-                    value = medicineName,
-
+                    value = name,
                     onValueChange = {
-                        medicineName = it
+                        name = it
                     },
-
-                    modifier = Modifier.fillMaxWidth(),
-
                     label = {
-                        Text(
-                            text = "نام دارو",
-                            color = Color(0xFFCBD5E1),
-                            fontFamily = Vazir
-                        )
+                        Text("نام دارو")
                     },
-
-                    colors = OutlinedTextFieldDefaults.colors(
-
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-
-                        focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color(0xFF475569),
-
-                        focusedLabelColor = Color(0xFF22C55E),
-                        unfocusedLabelColor = Color(0xFFCBD5E1),
-
-                        cursorColor = Color.White
-                    ),
-
-                    shape = RoundedCornerShape(18.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Button(
-                    onClick = {
-                        timePickerDialog.show()
+                OutlinedTextField(
+                    value = time,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = {
+                        Text("زمان مصرف")
                     },
-
-                    modifier = Modifier.fillMaxWidth(),
-
-                    shape = RoundedCornerShape(18.dp),
-
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1E293B)
-                    )
-                ) {
-
-                    Text(
-                        text = selectedTime,
-                        color = Color.White,
-                        fontFamily = Vazir
-                    )
-                }
-            }
-        },
-
-        confirmButton = {
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                )
 
                 Button(
                     onClick = {
 
-                        if (
-                            medicineName.isNotBlank() &&
-                            selectedTime != "انتخاب ساعت"
-                        ) {
+                        val calendar =
+                            Calendar.getInstance()
 
-                            onAdd(
-                                medicineName,
-                                selectedTime
+                        val dialog =
+                            TimePickerDialog(
+                                context,
+                                { _, hour, minute ->
+
+                                    time =
+                                        String.format(
+                                            "%02d:%02d",
+                                            hour,
+                                            minute
+                                        )
+                                },
+                                calendar.get(Calendar.HOUR_OF_DAY),
+                                calendar.get(Calendar.MINUTE),
+                                true
                             )
-                        }
+
+                        dialog.show()
                     },
-
-                    shape = RoundedCornerShape(16.dp),
-
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF22C55E)
-                    )
+                    modifier = Modifier.padding(top = 12.dp)
                 ) {
 
-                    Text(
-                        text = "ثبت",
-                        color = Color.White,
-                        fontFamily = Vazir
-                    )
-                }
-
-                TextButton(
-                    onClick = onDismiss
-                ) {
-
-                    Text(
-                        text = "لغو",
-                        color = Color(0xFFCBD5E1),
-                        fontFamily = Vazir
-                    )
+                    Text("انتخاب ساعت")
                 }
             }
         }
