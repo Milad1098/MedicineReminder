@@ -25,7 +25,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val channelId = "medicine_alarm"
 
-        val alarmSound = Uri.parse(
+        val soundUri = Uri.parse(
             "android.resource://${context.packageName}/${R.raw.alarm}"
         )
 
@@ -44,7 +44,7 @@ class AlarmReceiver : BroadcastReceiver() {
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
 
-            setSound(alarmSound, attributes)
+            description = "Medicine alarm channel"
 
             enableVibration(true)
 
@@ -54,6 +54,11 @@ class AlarmReceiver : BroadcastReceiver() {
                 1000,
                 1000
             )
+
+            setSound(soundUri, attributes)
+
+            lockscreenVisibility =
+                android.app.Notification.VISIBILITY_PUBLIC
         }
 
         manager.createNotificationChannel(channel)
@@ -71,7 +76,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val fullScreenPendingIntent =
             PendingIntent.getActivity(
                 context,
-                100,
+                111,
                 fullScreenIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or
                         PendingIntent.FLAG_IMMUTABLE
@@ -82,20 +87,20 @@ class AlarmReceiver : BroadcastReceiver() {
                 context,
                 channelId
             )
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setContentTitle("زمان مصرف دارو")
+                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setContentTitle("⏰ زمان مصرف دارو")
                 .setContentText("$medicineName را مصرف کن")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOngoing(true)
+                .setAutoCancel(false)
                 .setFullScreenIntent(
                     fullScreenPendingIntent,
                     true
                 )
                 .build()
 
-        manager.notify(1, notification)
-
-        context.startActivity(fullScreenIntent)
+        manager.notify(999, notification)
     }
 }
