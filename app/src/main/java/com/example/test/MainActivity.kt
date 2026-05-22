@@ -13,6 +13,7 @@ import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
 import com.example.test.ui.screens.HomeScreen
 import kotlinx.coroutines.launch
+import com.example.test.utils.NotificationHelper
 
 class MainActivity : ComponentActivity() {
 
