@@ -23,6 +23,7 @@ import com.example.test.data.local.Medicine
 import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.MedicineCard
+import com.example.test.ui.components.AddMedicineBottomSheet
 
 @Composable
 fun HomeScreen(
@@ -106,18 +107,18 @@ fun HomeScreen(
 
     if (showDialog) {
 
-        AddMedicineDialog(
-
+        AddMedicineBottomSheet(
+    
             fontFamily = fontFamily,
-
+    
             onDismiss = {
                 showDialog = false
             },
-
-            onAdd = { name, time ->
-
+    
+            onSave = { name, time ->
+    
                 onAddMedicine(name, time)
-
+    
                 showDialog = false
             }
         )
