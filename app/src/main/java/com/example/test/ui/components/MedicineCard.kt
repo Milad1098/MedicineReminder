@@ -1,21 +1,29 @@
 package com.example.test.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.test.data.local.Medicine
@@ -33,59 +41,59 @@ fun MedicineCard(
         )
     )
 
+    // جلوگیری از کرش
+    val parts = medicine.time.split(":")
+
+    val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+    val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+    val formattedTime = String.format("%02d:%02d", hour, minute)
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-
-        shape = RoundedCornerShape(30.dp),
-
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
         )
     ) {
 
-        Row(
+        Column(
             modifier = Modifier
                 .background(gradient)
-                .padding(22.dp),
-
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp)
         ) {
 
-            Box(
-                modifier = Modifier
-                    .size(68.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF22C55E)),
+            Text(
+                text = medicine.name,
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = fontFamily
+            )
 
-                contentAlignment = Alignment.Center
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
 
                 Icon(
-                    Icons.Default.Medication,
+                    imageVector = Icons.Default.AccessTime,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
+                    tint = Color(0xFF22C55E),
+                    modifier = Modifier.size(22.dp)
                 )
-            }
-
-            Spacer(modifier = Modifier.width(18.dp))
-
-            Column {
 
                 Text(
-                    text = medicine.name,
-                    color = Color.White,
-                    fontFamily = fontFamily,
-                    fontSize = 21.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = String.format(
-                    "%02d:%02d",
-                    medicine.time
-                )
+                    text = formattedTime,
+                    color = Color(0xFFCBD5E1),
+                    fontSize = 17.sp,
+                    fontFamily = fontFamily
                 )
             }
         }
