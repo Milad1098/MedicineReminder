@@ -32,6 +32,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import com.example.test.data.local.AppDatabase
+import com.example.test.data.local.Medicine
 
 class MainActivity : ComponentActivity() {
 
@@ -60,35 +62,6 @@ val Vazir = FontFamily(
     Font(R.font.vazirmatn_regular)
 )
 
-@Entity
-data class Medicine(
-
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-
-    val name: String,
-
-    val time: String
-)
-
-@Dao
-interface MedicineDao {
-
-    @Query("SELECT * FROM Medicine")
-    suspend fun getAll(): List<Medicine>
-
-    @Insert
-    suspend fun insert(medicine: Medicine)
-}
-
-@Database(
-    entities = [Medicine::class],
-    version = 1
-)
-abstract class AppDatabase : RoomDatabase() {
-
-    abstract fun medicineDao(): MedicineDao
-}
 
 @Composable
 fun MedicineReminderApp(db: AppDatabase) {
