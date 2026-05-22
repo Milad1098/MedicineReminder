@@ -84,8 +84,7 @@ fun MedicineCard(
                 Text(
                     text = String.format(
                     "%02d:%02d",
-                    medicine.hour,
-                    medicine.minute
+                    medicine.time
                 )
                 )
             }
