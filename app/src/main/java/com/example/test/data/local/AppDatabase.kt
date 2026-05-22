@@ -2,11 +2,10 @@ package com.example.test.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.test.data.model.Medicine
 
 @Database(
     entities = [Medicine::class],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
