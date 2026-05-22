@@ -7,7 +7,7 @@ import androidx.room.Query
 @Dao
 interface MedicineDao {
 
-    @Query("SELECT * FROM Medicine")
+    @Query("SELECT * FROM medicines")
     suspend fun getAll(): List<Medicine>
 
     @Insert
