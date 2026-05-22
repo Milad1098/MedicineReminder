@@ -1,20 +1,15 @@
 package com.example.test.data.local
 
-import androidx.room.*
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
 
 @Dao
 interface MedicineDao {
 
-    @Query("SELECT * FROM medicines")
-    fun getAllMedicines(): Flow<List<Medicine>>
+    @Query("SELECT * FROM Medicine")
+    suspend fun getAll(): List<Medicine>
 
     @Insert
-    suspend fun insertMedicine(medicine: Medicine)
-
-    @Delete
-    suspend fun deleteMedicine(medicine: Medicine)
-
-    @Update
-    suspend fun updateMedicine(medicine: Medicine)
+    suspend fun insert(medicine: Medicine)
 }
