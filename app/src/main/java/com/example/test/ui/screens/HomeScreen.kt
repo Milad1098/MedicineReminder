@@ -1,6 +1,8 @@
+فایل کامل `HomeScreen.kt` را کامل جایگزین کن:
+
+```kotlin
 package com.example.test.ui.screens
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,75 +10,101 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material3.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.room.Room
+import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
 import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.components.EmptyState
+import com.example.test.ui.components.HeaderSection
 import com.example.test.ui.components.MedicineCard
-import com.example.test.ui.components.AddMedicineBottomSheet
+import com.example.test.utils.scheduleNotification
+import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(
-    medicines: List<Medicine>,
-    fontFamily: FontFamily,
-    onAddMedicine: (String, String) -> Unit
-) {
+fun HomeScreen() {
+
+    val context = LocalContext.current
+
+    val db = remember {
+
+        Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "medicine_db"
+        ).build()
+    }
+
+    val dao = db.medicineDao()
+
+    var medicines by remember {
+        mutableStateOf<List<Medicine>>(emptyList())
+    }
 
     var showDialog by remember {
         mutableStateOf(false)
     }
 
-    val gradient = Brush.verticalGradient(
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+
+        medicines = dao.getAll()
+    }
+
+    val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF020617),
             Color(0xFF0F172A),
-            Color(0xFF111827)
+            Color(0xFF111827),
+            Color(0xFF1E293B)
         )
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(gradient)
-            .padding(horizontal = 18.dp)
+            .background(backgroundGradient)
+            .padding(horizontal = 20.dp)
     ) {
 
-        Column {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
 
-            Spacer(modifier = Modifier.height(42.dp))
+            Spacer(modifier = Modifier.height(50.dp))
 
-            HeaderSection(fontFamily)
+            HeaderSection()
 
             Spacer(modifier = Modifier.height(28.dp))
 
             if (medicines.isEmpty()) {
 
-                EmptyState(fontFamily)
+                EmptyState()
 
             } else {
 
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = 120.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(
+                        bottom = 120.dp
+                    )
                 ) {
 
                     items(medicines) { medicine ->
 
                         MedicineCard(
-                            medicine = medicine,
-                            fontFamily = fontFamily
+                            medicine = medicine
                         )
-
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
@@ -84,91 +112,63 @@ fun HomeScreen(
 
         FloatingActionButton(
             onClick = {
+
                 showDialog = true
             },
 
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(12.dp)
-                .animateContentSize(),
+                .padding(
+                    start = 6.dp,
+                    bottom = 24.dp
+                ),
 
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(24.dp),
 
-            containerColor = Color(0xFF22C55E)
+            containerColor = Color(0xFF22C55E),
+
+            contentColor = Color.White
         ) {
 
             Icon(
-                Icons.Default.Add,
-                contentDescription = null,
-                tint = Color.White
+                imageVector = Icons.Default.Add,
+                contentDescription = null
             )
         }
     }
 
     if (showDialog) {
 
-        AddMedicineBottomSheet(
-    
-            fontFamily = fontFamily,
-    
+        AddMedicineDialog(
+
             onDismiss = {
+
                 showDialog = false
             },
-    
-            onSave = { name, time ->
-    
-                onAddMedicine(name, time)
-    
+
+            onAdd = { name, time ->
+
+                scope.launch {
+
+                    dao.insert(
+
+                        Medicine(
+                            name = name,
+                            time = time
+                        )
+                    )
+
+                    medicines = dao.getAll()
+
+                    scheduleNotification(
+                        context = context,
+                        medicineName = name
+                    )
+                }
+
                 showDialog = false
             }
         )
     }
 }
-
-@Composable
-private fun HeaderSection(
-    fontFamily: FontFamily
-) {
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Column {
-
-            Text(
-                text = "یادآور دارو",
-                color = Color.White,
-                fontFamily = fontFamily,
-                fontSize = 34.sp
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "مدیریت هوشمند مصرف دارو",
-                color = Color(0xFF94A3B8),
-                fontFamily = fontFamily
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(72.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0x22FFFFFF)),
-
-            contentAlignment = Alignment.Center
-        ) {
-
-            Icon(
-                Icons.Default.Medication,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(34.dp)
-            )
-        }
-    }
-}
+```
