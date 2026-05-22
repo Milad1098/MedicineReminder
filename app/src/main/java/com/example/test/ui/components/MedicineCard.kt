@@ -4,22 +4,34 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.test.Vazir
 import com.example.test.data.local.Medicine
 
 @Composable
-fun MedicineCard(medicine: Medicine) {
+fun MedicineCard(
+    medicine: Medicine,
+    fontFamily: FontFamily
+) {
+
+    val gradient = Brush.horizontalGradient(
+        colors = listOf(
+            Color(0xFF1E293B),
+            Color(0xFF0F172A)
+        )
+    )
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -27,13 +39,13 @@ fun MedicineCard(medicine: Medicine) {
         shape = RoundedCornerShape(30.dp),
 
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.08f)
+            containerColor = Color.Transparent
         )
     ) {
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .background(gradient)
                 .padding(22.dp),
 
             verticalAlignment = Alignment.CenterVertically
@@ -41,16 +53,9 @@ fun MedicineCard(medicine: Medicine) {
 
             Box(
                 modifier = Modifier
-                    .size(70.dp)
+                    .size(68.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                Color(0xFF22C55E),
-                                Color(0xFF16A34A)
-                            )
-                        )
-                    ),
+                    .background(Color(0xFF22C55E)),
 
                 contentAlignment = Alignment.Center
             ) {
@@ -58,43 +63,30 @@ fun MedicineCard(medicine: Medicine) {
                 Icon(
                     Icons.Default.Medication,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
             Spacer(modifier = Modifier.width(18.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column {
 
                 Text(
                     text = medicine.name,
                     color = Color.White,
-                    fontFamily = Vazir,
+                    fontFamily = fontFamily,
                     fontSize = 21.sp
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Icon(
-                        Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = Color(0xFF94A3B8)
-                    )
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Text(
-                        text = medicine.time,
-                        color = Color(0xFFCBD5E1),
-                        fontFamily = Vazir
-                    )
-                }
+                Text(
+                    text = "⏰ ${medicine.time}",
+                    color = Color(0xFFCBD5E1),
+                    fontFamily = fontFamily,
+                    fontSize = 15.sp
+                )
             }
         }
     }
