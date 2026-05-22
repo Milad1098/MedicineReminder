@@ -1,4 +1,4 @@
-package com.example.test.data.model
+package com.example.test.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -11,7 +11,5 @@ data class Medicine(
 
     val name: String,
 
-    val hour: Int,
-
-    val minute: Int
+    val time: String
 )
