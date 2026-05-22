@@ -6,9 +6,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
-import android.net.Uri
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.test.AlarmActivity
 import com.example.test.R
@@ -21,68 +18,94 @@ class AlarmReceiver : BroadcastReceiver() {
     ) {
 
         val medicineName =
-            intent.getStringExtra("medicine")
-                ?: "دارو"
+            intent.getStringExtra(
+                "medicine"
+            ) ?: "دارو"
 
-        val channelId = "medicine_alarm"
-
-        val soundUri = Uri.parse(
-            "android.resource://${context.packageName}/${R.raw.alarm}"
-        )
+        val isReminder =
+            intent.getBooleanExtra(
+                "isReminder",
+                false
+            )
 
         val manager =
             context.getSystemService(
                 Context.NOTIFICATION_SERVICE
             ) as NotificationManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // reminder notification
 
-            val attributes =
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
+        if (isReminder) {
+
+            val reminderChannel =
+                NotificationChannel(
+                    "medicine_reminder",
+                    "Medicine Reminder",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+
+            manager.createNotificationChannel(
+                reminderChannel
+            )
+
+            val reminderNotification =
+                NotificationCompat.Builder(
+                    context,
+                    "medicine_reminder"
+                )
+                    .setSmallIcon(
+                        android.R.drawable.ic_dialog_info
+                    )
+                    .setContentTitle(
+                        "یادآوری مصرف دارو"
+                    )
+                    .setContentText(
+                        "۱۰ دقیقه تا مصرف $medicineName باقی مانده"
+                    )
+                    .setOngoing(true)
                     .build()
 
-            val channel =
-                NotificationChannel(
-                    channelId,
-                    "Medicine Alarm",
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
+            manager.notify(
+                medicineName.hashCode(),
+                reminderNotification
+            )
 
-                    enableVibration(true)
-
-                    vibrationPattern = longArrayOf(
-                        0,
-                        1000,
-                        1000,
-                        1000
-                    )
-
-                    setSound(soundUri, attributes)
-
-                    lockscreenVisibility =
-                        android.app.Notification.VISIBILITY_PUBLIC
-                }
-
-            manager.createNotificationChannel(channel)
+            return
         }
 
-        val activityIntent =
-            Intent(context, AlarmActivity::class.java).apply {
+        // full screen alarm
 
-                flags =
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+        val channelId = "medicine_alarm"
 
-                putExtra("medicine", medicineName)
-            }
+        val channel =
+            NotificationChannel(
+                channelId,
+                "Medicine Alarm",
+                NotificationManager.IMPORTANCE_HIGH
+            )
 
-        val pendingIntent =
+        manager.createNotificationChannel(channel)
+
+        val fullScreenIntent =
+            Intent(
+                context,
+                AlarmActivity::class.java
+            )
+
+        fullScreenIntent.putExtra(
+            "medicine",
+            medicineName
+        )
+
+        fullScreenIntent.flags =
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+        val fullScreenPendingIntent =
             PendingIntent.getActivity(
                 context,
-                100,
-                activityIntent,
+                999,
+                fullScreenIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or
                         PendingIntent.FLAG_IMMUTABLE
             )
@@ -92,25 +115,46 @@ class AlarmReceiver : BroadcastReceiver() {
                 context,
                 channelId
             )
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                .setContentTitle("⏰ زمان مصرف دارو")
-                .setContentText("$medicineName را مصرف کن")
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setOngoing(true)
-                .setAutoCancel(false)
+                .setSmallIcon(
+                    android.R.drawable.ic_dialog_info
+                )
+                .setContentTitle(
+                    "زمان مصرف دارو"
+                )
+                .setContentText(
+                    medicineName
+                )
+                .setPriority(
+                    NotificationCompat.PRIORITY_MAX
+                )
+                .setCategory(
+                    NotificationCompat.CATEGORY_ALARM
+                )
                 .setFullScreenIntent(
-                    pendingIntent,
+                    fullScreenPendingIntent,
                     true
                 )
+                .setAutoCancel(true)
                 .build()
 
-        manager.notify(999, notification)
+        manager.notify(
+            2001,
+            notification
+        )
 
-        /*
-            مهم‌ترین بخش
-         */
+        val activityIntent =
+            Intent(
+                context,
+                AlarmActivity::class.java
+            )
+
+        activityIntent.putExtra(
+            "medicine",
+            medicineName
+        )
+
+        activityIntent.flags =
+            Intent.FLAG_ACTIVITY_NEW_TASK
 
         context.startActivity(activityIntent)
     }
