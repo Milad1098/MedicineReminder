@@ -1,31 +1,20 @@
 package com.example.test.ui.components
 
-import android.app.TimePickerDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.test.Vazir
-import java.util.Calendar
 
 @Composable
 fun AddMedicineDialog(
+    fontFamily: FontFamily,
     onDismiss: () -> Unit,
     onAdd: (String, String) -> Unit
 ) {
-
-    val context = LocalContext.current
 
     var name by remember {
         mutableStateOf("")
@@ -41,15 +30,14 @@ fun AddMedicineDialog(
 
         containerColor = Color(0xFF111827),
 
-        shape = RoundedCornerShape(30.dp),
+        shape = RoundedCornerShape(28.dp),
 
         title = {
 
             Text(
-                text = "افزودن داروی جدید",
+                text = "افزودن دارو",
                 color = Color.White,
-                fontFamily = Vazir,
-                fontSize = 22.sp
+                fontFamily = fontFamily
             )
         },
 
@@ -67,97 +55,53 @@ fun AddMedicineDialog(
                     label = {
                         Text(
                             "نام دارو",
-                            color = Color(0xFFCBD5E1),
-                            fontFamily = Vazir
+                            color = Color.White,
+                            fontFamily = fontFamily
                         )
                     },
 
-                    textStyle = TextStyle(
-                        color = Color.White,
-                        fontFamily = Vazir,
-                        fontSize = 16.sp
-                    ),
-
-                    shape = RoundedCornerShape(20.dp),
-
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
                         focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color(0xFF475569),
-                        cursorColor = Color.White,
-                        focusedLabelColor = Color(0xFF22C55E),
-                        unfocusedLabelColor = Color(0xFFCBD5E1)
+                        unfocusedBorderColor = Color.Gray,
+                        cursorColor = Color.White
                     ),
+
+                    shape = RoundedCornerShape(18.dp),
 
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White.copy(alpha = 0.08f))
-                        .clickable {
+                OutlinedTextField(
+                    value = time,
 
-                            val calendar = Calendar.getInstance()
+                    onValueChange = {
+                        time = it
+                    },
 
-                            val hour =
-                                calendar.get(Calendar.HOUR_OF_DAY)
-
-                            val minute =
-                                calendar.get(Calendar.MINUTE)
-
-                            TimePickerDialog(
-                                context,
-
-                                { _, selectedHour, selectedMinute ->
-
-                                    time =
-                                        String.format(
-                                            "%02d:%02d",
-                                            selectedHour,
-                                            selectedMinute
-                                        )
-                                },
-
-                                hour,
-                                minute,
-                                true
-
-                            ).show()
-                        }
-                        .padding(20.dp)
-                ) {
-
-                    Row {
-
-                        Icon(
-                            Icons.Default.AccessTime,
-                            contentDescription = null,
-                            tint = Color(0xFF22C55E)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
+                    label = {
                         Text(
-                            text =
-                                if (time.isEmpty())
-                                    "انتخاب ساعت مصرف"
-                                else
-                                    time,
-
-                            color =
-                                if (time.isEmpty())
-                                    Color(0xFF94A3B8)
-                                else
-                                    Color.White,
-
-                            fontFamily = Vazir,
-                            fontSize = 16.sp
+                            "مثلاً 08:30",
+                            color = Color.White,
+                            fontFamily = fontFamily
                         )
-                    }
-                }
+                    },
+
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFF22C55E),
+                        unfocusedBorderColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+
+                    shape = RoundedCornerShape(18.dp),
+
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
 
@@ -176,7 +120,7 @@ fun AddMedicineDialog(
                     }
                 },
 
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
 
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF22C55E)
@@ -184,9 +128,8 @@ fun AddMedicineDialog(
             ) {
 
                 Text(
-                    text = "ثبت دارو",
-                    fontFamily = Vazir,
-                    color = Color.White
+                    text = "ثبت",
+                    fontFamily = fontFamily
                 )
             }
         },
@@ -199,8 +142,8 @@ fun AddMedicineDialog(
 
                 Text(
                     text = "لغو",
-                    fontFamily = Vazir,
-                    color = Color(0xFFCBD5E1)
+                    color = Color.White,
+                    fontFamily = fontFamily
                 )
             }
         }
