@@ -1,14 +1,12 @@
 package com.example.test.receiver
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.example.test.MainActivity
 import com.example.test.R
-import com.example.test.utils.NotificationHelper
 
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -18,49 +16,35 @@ class AlarmReceiver : BroadcastReceiver() {
     ) {
 
         val medicineName =
-            intent.getStringExtra("medicine_name")
-                ?: "دارو"
+            intent.getStringExtra("medicine") ?: "دارو"
 
-        val openIntent = Intent(
-            context,
-            MainActivity::class.java
-        )
-
-        val pendingIntent =
-            PendingIntent.getActivity(
-                context,
-                0,
-                openIntent,
-                PendingIntent.FLAG_IMMUTABLE
-            )
-
-        val notification =
-            NotificationCompat.Builder(
-                context,
-                NotificationHelper.CHANNEL_ID
-            )
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("زمان مصرف دارو")
-                .setContentText(medicineName)
-                .setPriority(
-                    NotificationCompat.PRIORITY_HIGH
-                )
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .setVibrate(
-                    longArrayOf(
-                        1000,
-                        1000,
-                        1000,
-                        1000
-                    )
-                )
-                .build()
+        val channelId = "medicine_channel"
 
         val manager =
             context.getSystemService(
                 Context.NOTIFICATION_SERVICE
             ) as NotificationManager
+
+        val channel = NotificationChannel(
+            channelId,
+            "Medicine Reminder",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+
+        manager.createNotificationChannel(channel)
+
+        val notification =
+            NotificationCompat.Builder(
+                context,
+                channelId
+            )
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("زمان مصرف دارو")
+                .setContentText(medicineName)
+                .setPriority(
+                    NotificationCompat.PRIORITY_HIGH
+                )
+                .build()
 
         manager.notify(
             System.currentTimeMillis().toInt(),
