@@ -1,28 +1,53 @@
 package com.example.test.ui.components
 
+import android.app.TimePickerDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.test.ui.theme.Vazir
+import java.util.*
 
 @Composable
 fun AddMedicineDialog(
-    fontFamily: FontFamily,
     onDismiss: () -> Unit,
-    onAdd: (String, String) -> Unit
+    onAdd: (String, Int, Int) -> Unit
 ) {
 
     var name by remember {
         mutableStateOf("")
     }
 
-    var time by remember {
-        mutableStateOf("")
+    var hour by remember {
+        mutableIntStateOf(8)
     }
+
+    var minute by remember {
+        mutableIntStateOf(0)
+    }
+
+    val context = LocalContext.current
+
+    val timePicker = TimePickerDialog(
+        context,
+        { _, h, m ->
+            hour = h
+            minute = m
+        },
+        hour,
+        minute,
+        true
+    )
 
     AlertDialog(
 
@@ -36,8 +61,10 @@ fun AddMedicineDialog(
 
             Text(
                 text = "افزودن دارو",
+                fontFamily = Vazir,
                 color = Color.White,
-                fontFamily = fontFamily
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp
             )
         },
 
@@ -46,6 +73,7 @@ fun AddMedicineDialog(
             Column {
 
                 OutlinedTextField(
+
                     value = name,
 
                     onValueChange = {
@@ -55,16 +83,21 @@ fun AddMedicineDialog(
                     label = {
                         Text(
                             "نام دارو",
-                            color = Color.White,
-                            fontFamily = fontFamily
+                            color = Color(0xFFCBD5E1),
+                            fontFamily = Vazir
                         )
                     },
 
+                    textStyle = LocalTextStyle.current.copy(
+                        color = Color.White,
+                        fontFamily = Vazir
+                    ),
+
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
                         focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color.Gray,
+                        unfocusedBorderColor = Color(0xFF334155),
+                        focusedLabelColor = Color(0xFF22C55E),
+                        unfocusedLabelColor = Color(0xFF94A3B8),
                         cursorColor = Color.White
                     ),
 
@@ -75,33 +108,43 @@ fun AddMedicineDialog(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                OutlinedTextField(
-                    value = time,
+                Box(
 
-                    onValueChange = {
-                        time = it
-                    },
-
-                    label = {
-                        Text(
-                            "مثلاً 08:30",
-                            color = Color.White,
-                            fontFamily = fontFamily
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFF1E293B),
+                            RoundedCornerShape(18.dp)
                         )
-                    },
+                        .clickable {
+                            timePicker.show()
+                        }
+                        .padding(18.dp)
+                ) {
 
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color.Gray,
-                        cursorColor = Color.White
-                    ),
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
 
-                    shape = RoundedCornerShape(18.dp),
+                        Text(
+                            text = String.format(
+                                "%02d:%02d",
+                                hour,
+                                minute
+                            ),
+                            color = Color.White,
+                            fontFamily = Vazir,
+                            fontSize = 20.sp
+                        )
 
-                    modifier = Modifier.fillMaxWidth()
-                )
+                        Icon(
+                            Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = Color(0xFF22C55E)
+                        )
+                    }
+                }
             }
         },
 
@@ -111,25 +154,27 @@ fun AddMedicineDialog(
 
                 onClick = {
 
-                    if (
-                        name.isNotBlank() &&
-                        time.isNotBlank()
-                    ) {
+                    if (name.isNotBlank()) {
 
-                        onAdd(name, time)
+                        onAdd(
+                            name,
+                            hour,
+                            minute
+                        )
                     }
                 },
 
-                shape = RoundedCornerShape(16.dp),
-
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF22C55E)
-                )
+                ),
+
+                shape = RoundedCornerShape(18.dp)
             ) {
 
                 Text(
-                    text = "ثبت",
-                    fontFamily = fontFamily
+                    text = "ثبت دارو",
+                    fontFamily = Vazir,
+                    color = Color.White
                 )
             }
         },
@@ -143,7 +188,7 @@ fun AddMedicineDialog(
                 Text(
                     text = "لغو",
                     color = Color.White,
-                    fontFamily = fontFamily
+                    fontFamily = Vazir
                 )
             }
         }
