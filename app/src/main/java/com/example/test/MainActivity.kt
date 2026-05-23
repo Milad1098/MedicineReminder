@@ -8,14 +8,12 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.room.Room
-import com.example.test.data.local.AppDatabase
-import com.example.test.ui.screens.HomeScreen
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.example.test.ui.screens.HomeScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -43,26 +41,17 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "medicine_db"
-        )
-            .fallbackToDestructiveMigration()
-            .allowMainThreadQueries()
-            .build()
-
         setContent {
 
             CompositionLocalProvider(
                 LocalLayoutDirection provides LayoutDirection.Rtl
             ) {
-        
+
                 MaterialTheme {
-        
+
                     Surface {
-        
-                        HomeScreen(db)
+
+                        HomeScreen()
                     }
                 }
             }
