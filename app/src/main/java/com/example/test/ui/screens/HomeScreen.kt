@@ -99,21 +99,23 @@ fun HomeScreen() {
             }
         }
 
-        // ── FAB ──────────────────────────────────────────────────────────────
+        // ── FAB — مرکز دقیق ──────────────────────────────────────────────────
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 38.dp)
+                .wrapContentSize(),
+            contentAlignment = Alignment.Center
         ) {
+            // دایره halo — دقیقاً وسط FAB
             Box(
                 modifier = Modifier
-                    .size(76.dp)
-                    .align(Alignment.Center)
-                    .background(Green500.copy(alpha = 0.15f), CircleShape)
+                    .size(78.dp)
+                    .background(Green500.copy(alpha = 0.13f), CircleShape)
             )
             FloatingActionButton(
                 onClick        = { editingMedicine = null; showDialog = true },
-                modifier       = Modifier.size(58.dp),
+                modifier       = Modifier.size(56.dp),
                 shape          = CircleShape,
                 containerColor = Green500,
                 contentColor   = Color.White,
@@ -210,24 +212,16 @@ private fun HeaderCard(count: Int) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(26.dp))
             .background(Color(0xFF0A1628))
-            .border(
-                1.dp,
-                Color(0xFF1A3050),
-                RoundedCornerShape(26.dp)
-            )
+            .border(1.dp, Color(0xFF1A3050), RoundedCornerShape(26.dp))
             .padding(22.dp)
     ) {
-        // glow تزئینی
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .size(100.dp)
                 .background(
                     Brush.radialGradient(
-                        colors = listOf(
-                            Green500.copy(alpha = 0.15f),
-                            Color.Transparent
-                        )
+                        colors = listOf(Green500.copy(alpha = 0.15f), Color.Transparent)
                     ),
                     CircleShape
                 )
@@ -238,10 +232,7 @@ private fun HeaderCard(count: Int) {
                 .size(70.dp)
                 .background(
                     Brush.radialGradient(
-                        colors = listOf(
-                            Blue400.copy(alpha = 0.1f),
-                            Color.Transparent
-                        )
+                        colors = listOf(Blue400.copy(alpha = 0.1f), Color.Transparent)
                     ),
                     CircleShape
                 )
@@ -272,15 +263,8 @@ private fun HeaderCard(count: Int) {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .background(
-                            Green500.copy(alpha = 0.12f),
-                            RoundedCornerShape(16.dp)
-                        )
-                        .border(
-                            1.dp,
-                            Green500.copy(alpha = 0.2f),
-                            RoundedCornerShape(16.dp)
-                        ),
+                        .background(Green500.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+                        .border(1.dp, Green500.copy(alpha = 0.2f), RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -293,19 +277,15 @@ private fun HeaderCard(count: Int) {
 
             if (count > 0) {
                 Spacer(Modifier.height(18.dp))
-                HorizontalDivider(
-                    color     = Color(0xFF1A3050),
-                    thickness = 0.5.dp
-                )
+                HorizontalDivider(color = Color(0xFF1A3050), thickness = 0.5.dp)
                 Spacer(Modifier.height(16.dp))
-
                 Row(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    StatItem(value = "$count", label = "داروها", color = Color.White)
+                    StatItem(value = "$count", label = "داروها",        color = Color.White)
                     StatDivider()
-                    StatItem(value = "فعال", label = "آلارم‌ها", color = Green400)
+                    StatItem(value = "فعال",   label = "آلارم‌ها",      color = Green400)
                     StatDivider()
                     StatItem(value = "یادآور", label = "۱۰ دقیقه قبل", color = Blue400)
                 }
@@ -317,19 +297,8 @@ private fun HeaderCard(count: Int) {
 @Composable
 private fun StatItem(value: String, label: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            value,
-            fontFamily = Vazir,
-            fontWeight = FontWeight.Bold,
-            fontSize   = 16.sp,
-            color      = color
-        )
-        Text(
-            label,
-            fontFamily = Vazir,
-            fontSize   = 11.sp,
-            color      = Slate500
-        )
+        Text(value, fontFamily = Vazir, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = color)
+        Text(label, fontFamily = Vazir, fontSize = 11.sp, color = Slate500)
     }
 }
 
@@ -348,9 +317,7 @@ private fun StatDivider() {
 @Composable
 private fun EmptyCard() {
     Box(
-        modifier        = Modifier
-            .fillMaxWidth()
-            .padding(top = 60.dp),
+        modifier         = Modifier.fillMaxWidth().padding(top = 60.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -362,10 +329,7 @@ private fun EmptyCard() {
                     .size(100.dp)
                     .background(
                         Brush.radialGradient(
-                            colors = listOf(
-                                Green500.copy(alpha = 0.15f),
-                                Color.Transparent
-                            )
+                            colors = listOf(Green500.copy(alpha = 0.15f), Color.Transparent)
                         ),
                         CircleShape
                     ),
@@ -385,20 +349,15 @@ private fun EmptyCard() {
                     )
                 }
             }
-
             Text(
                 "هنوز دارویی ثبت نشده",
-                fontFamily = Vazir,
-                fontWeight = FontWeight.Bold,
-                fontSize   = 20.sp,
-                color      = Color.White
+                fontFamily = Vazir, fontWeight = FontWeight.Bold,
+                fontSize = 20.sp, color = Color.White
             )
             Text(
                 "روی دکمه + بزن تا اولین دارو رو اضافه کنی",
-                fontFamily = Vazir,
-                fontSize   = 14.sp,
-                color      = Slate500,
-                textAlign  = TextAlign.Center
+                fontFamily = Vazir, fontSize = 14.sp,
+                color = Slate500, textAlign = TextAlign.Center
             )
         }
     }
@@ -420,7 +379,6 @@ private fun MedicineCard(
         12   -> "هر ۱۲ ساعت"
         else -> "هر ${medicine.cycleHours} ساعت"
     }
-
     val isCyclic = medicine.cycleHours > 0
 
     Box(
@@ -430,21 +388,17 @@ private fun MedicineCard(
             .background(Color(0xFF0A1628))
             .border(1.dp, Color(0xFF1A3050), RoundedCornerShape(20.dp))
     ) {
-        // نوار رنگی سمت راست (RTL)
         Box(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .width(3.dp)
                 .height(50.dp)
-                .clip(
-                    RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp)
-                )
+                .clip(RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp))
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
                             if (isCyclic) Blue400 else Green400,
-                            if (isCyclic) Blue400.copy(alpha = 0.3f)
-                            else Green400.copy(alpha = 0.3f)
+                            if (isCyclic) Blue400.copy(alpha = 0.3f) else Green400.copy(alpha = 0.3f)
                         )
                     )
                 )
@@ -457,23 +411,21 @@ private fun MedicineCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically
         ) {
-            // آیکون + اطلاعات
             Row(
                 verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
             ) {
                 Box(
                     modifier = Modifier
                         .size(46.dp)
                         .background(
-                            if (isCyclic) Blue400.copy(alpha = 0.1f)
-                            else Green500.copy(alpha = 0.1f),
+                            if (isCyclic) Blue400.copy(alpha = 0.1f) else Green500.copy(alpha = 0.1f),
                             RoundedCornerShape(14.dp)
                         )
                         .border(
                             1.dp,
-                            if (isCyclic) Blue400.copy(alpha = 0.2f)
-                            else Green500.copy(alpha = 0.2f),
+                            if (isCyclic) Blue400.copy(alpha = 0.2f) else Green500.copy(alpha = 0.2f),
                             RoundedCornerShape(14.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -488,16 +440,13 @@ private fun MedicineCard(
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(
                         medicine.name,
-                        fontFamily = Vazir,
-                        fontWeight = FontWeight.Bold,
-                        fontSize   = 16.sp,
-                        color      = Color.White
+                        fontFamily = Vazir, fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp, color = Color.White
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment     = Alignment.CenterVertically
                     ) {
-                        // ساعت
                         Row(
                             verticalAlignment     = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -509,14 +458,11 @@ private fun MedicineCard(
                             )
                             Text(
                                 medicine.time,
-                                fontFamily = Vazir,
-                                fontSize   = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color      = Blue400
+                                fontFamily = Vazir, fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold, color = Blue400
                             )
                         }
 
-                        // badge سیکل
                         Box(
                             modifier = Modifier
                                 .background(
@@ -534,40 +480,53 @@ private fun MedicineCard(
                         ) {
                             Text(
                                 cycleLabel,
-                                fontFamily = Vazir,
-                                fontSize   = 11.sp,
-                                color      = if (isCyclic) Blue400 else Green400
+                                fontFamily = Vazir, fontSize = 11.sp,
+                                color = if (isCyclic) Blue400 else Green400
                             )
                         }
                     }
                 }
             }
 
-            // دکمه‌ها
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                IconButton(
-                    onClick  = onEdit,
+            // ── دکمه‌ها با فاصله درست ──────────────────────────────────────
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp), // ← فاصله اضافه شد
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .background(Blue400.copy(alpha = 0.08f), CircleShape)
+                        .size(40.dp)                                  // ← کمی بزرگتر
+                        .background(Blue400.copy(alpha = 0.08f), CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Default.Edit, null,
-                        tint     = Blue400,
-                        modifier = Modifier.size(17.dp)
-                    )
+                    IconButton(
+                        onClick  = onEdit,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Edit, null,
+                            tint     = Blue400,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
-                IconButton(
-                    onClick  = onDelete,
+
+                Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .background(Red400.copy(alpha = 0.08f), CircleShape)
+                        .size(40.dp)
+                        .background(Red400.copy(alpha = 0.08f), CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Default.Delete, null,
-                        tint     = Red400,
-                        modifier = Modifier.size(17.dp)
-                    )
+                    IconButton(
+                        onClick  = onDelete,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Delete, null,
+                            tint     = Red400,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }
