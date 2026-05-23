@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.test.alarm.scheduleMedicineAlarm
 import com.example.test.data.local.AppDatabase
@@ -43,8 +44,12 @@ fun HomeScreen(
 
     val dao = db.medicineDao()
 
+    val context = LocalContext.current
+
     var medicines by remember {
-        mutableStateOf(listOf<Medicine>())
+        mutableStateOf(
+            listOf<Medicine>()
+        )
     }
 
     var showDialog by remember {
@@ -58,17 +63,19 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
+
         medicines = dao.getAll()
     }
 
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF020617),
-            Color(0xFF0F172A),
-            Color(0xFF111827),
-            Color(0xFF1E293B)
+    val backgroundGradient =
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFF020617),
+                Color(0xFF0F172A),
+                Color(0xFF111827),
+                Color(0xFF1E293B)
+            )
         )
-    )
 
     Box(
         modifier = Modifier
@@ -100,21 +107,29 @@ fun HomeScreen(
             } else {
 
                 LazyColumn(
+
                     verticalArrangement =
                         Arrangement.spacedBy(16.dp),
 
                     contentPadding =
-                        PaddingValues(bottom = 120.dp)
+                        PaddingValues(
+                            bottom = 120.dp
+                        )
                 ) {
 
                     items(medicines) { medicine ->
 
                         MedicineCard(
+
                             medicine = medicine,
+
                             fontFamily = Vazir,
 
                             onEdit = {
-                                editingMedicine = medicine
+
+                                editingMedicine =
+                                    medicine
+
                                 showDialog = true
                             },
 
@@ -135,6 +150,7 @@ fun HomeScreen(
         }
 
         FloatingActionButton(
+
             onClick = {
 
                 editingMedicine = null
@@ -148,8 +164,11 @@ fun HomeScreen(
                     bottom = 24.dp
                 ),
 
-            containerColor = Color(0xFF22C55E),
+            containerColor =
+                Color(0xFF22C55E),
+
             contentColor = Color.White
+
         ) {
 
             Icon(
@@ -162,6 +181,7 @@ fun HomeScreen(
     if (showDialog) {
 
         AddMedicineDialog(
+
             medicine = editingMedicine,
 
             onDismiss = {
@@ -176,15 +196,16 @@ fun HomeScreen(
 
                     if (editingMedicine == null) {
 
-                        val medicine = Medicine(
-                            name = name,
-                            time = time
-                        )
+                        val medicine =
+                            Medicine(
+                                name = name,
+                                time = time
+                            )
 
                         dao.insert(medicine)
 
                         scheduleMedicineAlarm(
-                            context = db.context,
+                            context = context,
                             medicineName = name,
                             time = time
                         )
@@ -192,6 +213,7 @@ fun HomeScreen(
                     } else {
 
                         dao.update(
+
                             editingMedicine!!.copy(
                                 name = name,
                                 time = time
