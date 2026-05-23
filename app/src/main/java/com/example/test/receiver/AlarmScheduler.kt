@@ -9,15 +9,10 @@ import java.util.Calendar
 
 object AlarmScheduler {
 
-    fun scheduleAlarm(
-        context: Context,
-        medicine: Medicine
-    ) {
+    fun scheduleAlarm(context: Context, medicine: Medicine) {
 
         val alarmManager =
-            context.getSystemService(
-                Context.ALARM_SERVICE
-            ) as AlarmManager
+            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val parts = medicine.time.split(":")
         val hour = parts[0].toInt()
@@ -27,58 +22,83 @@ object AlarmScheduler {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
-
+            set(Calendar.MILLISECOND, 0)
             if (before(Calendar.getInstance())) {
                 add(Calendar.DAY_OF_MONTH, 1)
             }
         }
 
-        val intent = Intent(
-            context,
-            AlarmReceiver::class.java
-        ).apply {
+        // آلارم اصلی
+        val mainIntent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("medicine_id", medicine.id)
             putExtra("medicine_name", medicine.name)
+            putExtra("isReminder", false)
         }
 
-        val pendingIntent = PendingIntent.getBroadcast(
+        val mainPending = PendingIntent.getBroadcast(
             context,
             medicine.id,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or
-                    PendingIntent.FLAG_IMMUTABLE
+            mainIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
-            pendingIntent
+            mainPending
         )
+
+        // نوتیف ۱۰ دقیقه قبل
+        val reminderCalendar = (calendar.clone() as Calendar).apply {
+            add(Calendar.MINUTE, -10)
+        }
+
+        if (reminderCalendar.after(Calendar.getInstance())) {
+
+            val reminderIntent = Intent(context, AlarmReceiver::class.java).apply {
+                putExtra("medicine_id", medicine.id)
+                putExtra("medicine_name", medicine.name)
+                putExtra("isReminder", true)
+            }
+
+            val reminderPending = PendingIntent.getBroadcast(
+                context,
+                medicine.id + 10000,
+                reminderIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                reminderCalendar.timeInMillis,
+                reminderPending
+            )
+        }
     }
 
-    fun cancelAlarm(
-        context: Context,
-        medicineId: Int
-    ) {
+    fun cancelAlarm(context: Context, medicineId: Int) {
 
         val alarmManager =
-            context.getSystemService(
-                Context.ALARM_SERVICE
-            ) as AlarmManager
+            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        val intent = Intent(
-            context,
-            AlarmReceiver::class.java
-        )
-
-        val pendingIntent = PendingIntent.getBroadcast(
+        // لغو آلارم اصلی
+        val mainIntent = Intent(context, AlarmReceiver::class.java)
+        val mainPending = PendingIntent.getBroadcast(
             context,
             medicineId,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or
-                    PendingIntent.FLAG_IMMUTABLE
+            mainIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        alarmManager.cancel(mainPending)
 
-        alarmManager.cancel(pendingIntent)
+        // لغو نوتیف reminder
+        val reminderIntent = Intent(context, AlarmReceiver::class.java)
+        val reminderPending = PendingIntent.getBroadcast(
+            context,
+            medicineId + 10000,
+            reminderIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(reminderPending)
     }
 }
