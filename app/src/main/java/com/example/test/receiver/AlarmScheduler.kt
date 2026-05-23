@@ -15,15 +15,17 @@ object AlarmScheduler {
             context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val parts = medicine.time.split(":")
-        val hour = parts[0].toInt()
-        val minute = parts[1].toInt()
+        if (parts.size != 2) return
+
+        val hour = parts[0].toIntOrNull() ?: return
+        val minute = parts[1].toIntOrNull() ?: return
 
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-            if (before(Calendar.getInstance())) {
+            if (timeInMillis <= System.currentTimeMillis()) {
                 add(Calendar.DAY_OF_MONTH, 1)
             }
         }
@@ -42,18 +44,24 @@ object AlarmScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            mainPending
-        )
-
-        // نوتیف ۱۰ دقیقه قبل
-        val reminderCalendar = (calendar.clone() as Calendar).apply {
-            add(Calendar.MINUTE, -10)
+        try {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                mainPending
+            )
+        } catch (e: SecurityException) {
+            // اگه پرمیشن exact alarm نداشت
+            alarmManager.set(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                mainPending
+            )
         }
 
-        if (reminderCalendar.after(Calendar.getInstance())) {
+        // reminder ۱۰ دقیقه قبل
+        val reminderTime = calendar.timeInMillis - (10 * 60 * 1000)
+        if (reminderTime > System.currentTimeMillis()) {
 
             val reminderIntent = Intent(context, AlarmReceiver::class.java).apply {
                 putExtra("medicine_id", medicine.id)
@@ -68,11 +76,19 @@ object AlarmScheduler {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                reminderCalendar.timeInMillis,
-                reminderPending
-            )
+            try {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    reminderTime,
+                    reminderPending
+                )
+            } catch (e: SecurityException) {
+                alarmManager.set(
+                    AlarmManager.RTC_WAKEUP,
+                    reminderTime,
+                    reminderPending
+                )
+            }
         }
     }
 
@@ -81,24 +97,15 @@ object AlarmScheduler {
         val alarmManager =
             context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        // لغو آلارم اصلی
-        val mainIntent = Intent(context, AlarmReceiver::class.java)
-        val mainPending = PendingIntent.getBroadcast(
-            context,
-            medicineId,
-            mainIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(mainPending)
-
-        // لغو نوتیف reminder
-        val reminderIntent = Intent(context, AlarmReceiver::class.java)
-        val reminderPending = PendingIntent.getBroadcast(
-            context,
-            medicineId + 10000,
-            reminderIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(reminderPending)
+        listOf(medicineId, medicineId + 10000).forEach { id ->
+            val intent = Intent(context, AlarmReceiver::class.java)
+            val pending = PendingIntent.getBroadcast(
+                context,
+                id,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.cancel(pending)
+        }
     }
 }
