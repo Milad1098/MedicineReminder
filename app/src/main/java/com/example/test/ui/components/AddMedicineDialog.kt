@@ -13,32 +13,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.test.data.local.Medicine
-import com.example.test.ui.theme.Vazir
+import com.example.test.ui.theme.*
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMedicineDialog(
-    medicine: Medicine? = null,
+    medicine:  Medicine? = null,
     onDismiss: () -> Unit,
-    onAdd: (String, String) -> Unit
+    onAdd:     (String, String) -> Unit
 ) {
-    val context = LocalContext.current
+    val context    = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var name by remember { mutableStateOf(medicine?.name ?: "") }
     var time by remember { mutableStateOf(medicine?.time ?: "") }
 
+    val isReady = name.isNotBlank() && time.isNotBlank()
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = Color(0xFF0F1F35),
+        sheetState       = sheetState,
+        containerColor   = Color(0xFF0C1A2E),
         dragHandle = {
             Box(
                 modifier = Modifier
-                    .padding(top = 12.dp, bottom = 8.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .background(Color(0xFF334155), RoundedCornerShape(2.dp))
+                    .padding(vertical = 12.dp)
+                    .size(width = 36.dp, height = 4.dp)
+                    .background(Slate700, RoundedCornerShape(2.dp))
             )
         }
     ) {
@@ -46,122 +48,101 @@ fun AddMedicineDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 40.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(bottom = 48.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
 
+            // عنوان
             Text(
-                text = if (medicine == null) "افزودن دارو جدید" else "ویرایش دارو",
+                if (medicine == null) "افزودن دارو" else "ویرایش دارو",
                 fontFamily = Vazir,
-                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontSize   = 20.sp,
+                color      = Color.White
             )
 
-            // نام دارو
+            // نام
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "نام دارو",
-                    fontFamily = Vazir,
-                    color = Color(0xFF94A3B8),
-                    fontSize = 13.sp
-                )
+                Text("نام دارو", fontFamily = Vazir,
+                    fontSize = 13.sp, color = Slate400)
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = {
-                        Text(
-                            "مثلاً: قرص فشار خون",
-                            fontFamily = Vazir,
-                            color = Color(0xFF475569)
-                        )
+                    value           = name,
+                    onValueChange   = { name = it },
+                    placeholder     = {
+                        Text("مثلاً: قرص فشار",
+                            fontFamily = Vazir, color = Slate700)
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF22C55E),
-                        unfocusedBorderColor = Color(0xFF334155),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = Color(0xFF22C55E),
-                        focusedContainerColor = Color(0xFF1E293B),
-                        unfocusedContainerColor = Color(0xFF1E293B)
+                    modifier        = Modifier.fillMaxWidth(),
+                    shape           = RoundedCornerShape(16.dp),
+                    singleLine      = true,
+                    colors          = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor   = Green500,
+                        unfocusedBorderColor = Slate700,
+                        focusedTextColor     = Color.White,
+                        unfocusedTextColor   = Color.White,
+                        cursorColor          = Green500,
+                        focusedContainerColor   = Color(0xFF101D30),
+                        unfocusedContainerColor = Color(0xFF101D30)
                     )
                 )
             }
 
             // زمان
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "زمان مصرف",
-                    fontFamily = Vazir,
-                    color = Color(0xFF94A3B8),
-                    fontSize = 13.sp
-                )
-
+                Text("زمان مصرف", fontFamily = Vazir,
+                    fontSize = 13.sp, color = Slate400)
                 Button(
                     onClick = {
                         val cal = Calendar.getInstance()
                         TimePickerDialog(
                             context,
-                            { _, hour, minute ->
-                                time = String.format("%02d:%02d", hour, minute)
-                            },
+                            { _, h, m -> time = "%02d:%02d".format(h, m) },
                             cal.get(Calendar.HOUR_OF_DAY),
                             cal.get(Calendar.MINUTE),
                             true
                         ).show()
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1E293B)
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape    = RoundedCornerShape(16.dp),
+                    colors   = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF101D30)
                     )
                 ) {
                     Text(
-                        text = if (time.isEmpty()) "انتخاب ساعت" else "⏰  $time",
+                        if (time.isEmpty()) "انتخاب ساعت" else "🕐  $time",
                         fontFamily = Vazir,
-                        color = if (time.isEmpty()) Color(0xFF64748B) else Color(0xFF38BDF8),
-                        fontSize = 16.sp,
-                        fontWeight = if (time.isEmpty()) FontWeight.Normal else FontWeight.Bold
+                        fontSize   = 16.sp,
+                        fontWeight = if (time.isEmpty()) FontWeight.Normal else FontWeight.Bold,
+                        color      = if (time.isEmpty()) Slate500 else Blue400
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
             // دکمه ثبت
             Button(
-                onClick = {
-                    if (name.isNotBlank() && time.isNotBlank()) {
-                        onAdd(name.trim(), time.trim())
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (name.isNotBlank() && time.isNotBlank())
-                        Color(0xFF22C55E) else Color(0xFF1E293B)
+                onClick  = { if (isReady) onAdd(name.trim(), time.trim()) },
+                modifier = Modifier.fillMaxWidth().height(58.dp),
+                shape    = RoundedCornerShape(18.dp),
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor = if (isReady) Green500 else Slate700
                 )
             ) {
                 Text(
-                    text = if (medicine == null) "ثبت دارو" else "ذخیره تغییرات",
+                    if (medicine == null) "ثبت دارو" else "ذخیره تغییرات",
                     fontFamily = Vazir,
-                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontSize   = 17.sp,
+                    color      = Color.White
                 )
             }
 
             TextButton(
-                onClick = onDismiss,
+                onClick  = onDismiss,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("بستن", fontFamily = Vazir, color = Color(0xFF64748B))
+                Text("بستن", fontFamily = Vazir, color = Slate500)
             }
         }
     }
