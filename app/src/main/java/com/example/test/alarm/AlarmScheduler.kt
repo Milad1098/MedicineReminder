@@ -7,104 +7,127 @@ import android.content.Intent
 import com.example.test.receiver.AlarmReceiver
 import java.util.Calendar
 
-fun scheduleMedicineAlarm(
-    context: Context,
-    medicineName: String,
-    time: String
-) {
+object AlarmScheduler {
 
-    val parts = time.split(":")
-
-    val hour = parts[0].toInt()
-    val minute = parts[1].toInt()
-
-    val calendar = Calendar.getInstance()
-
-    calendar.set(
-        Calendar.HOUR_OF_DAY,
-        hour
-    )
-
-    calendar.set(
-        Calendar.MINUTE,
-        minute
-    )
-
-    calendar.set(
-        Calendar.SECOND,
-        0
-    )
-
-    if (
-        calendar.timeInMillis <
-        System.currentTimeMillis()
+    fun schedule(
+        context: Context,
+        medicineId: Int,
+        medicineName: String,
+        hour: Int,
+        minute: Int
     ) {
 
-        calendar.add(
-            Calendar.DAY_OF_MONTH,
-            1
+        cancel(context, medicineId)
+
+        val alarmManager =
+            context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+        val reminderIntent = Intent(
+            context,
+            AlarmReceiver::class.java
+        ).apply {
+            putExtra("medicine", medicineName)
+            putExtra("medicine_id", medicineId)
+            putExtra("isReminder", true)
+        }
+
+        val reminderPendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                medicineId + 10000,
+                reminderIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE
+            )
+
+        val alarmIntent = Intent(
+            context,
+            AlarmReceiver::class.java
+        ).apply {
+            putExtra("medicine", medicineName)
+            putExtra("medicine_id", medicineId)
+            putExtra("isReminder", false)
+        }
+
+        val alarmPendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                medicineId,
+                alarmIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE
+            )
+
+        val now = Calendar.getInstance()
+
+        val alarmCalendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+
+            if (before(now)) {
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
+        }
+
+        val reminderCalendar =
+            alarmCalendar.clone() as Calendar
+
+        reminderCalendar.add(Calendar.MINUTE, -10)
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            reminderCalendar.timeInMillis,
+            reminderPendingIntent
+        )
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            alarmCalendar.timeInMillis,
+            alarmPendingIntent
         )
     }
 
-    val alarmManager =
-        context.getSystemService(
-            Context.ALARM_SERVICE
-        ) as AlarmManager
+    fun cancel(
+        context: Context,
+        medicineId: Int
+    ) {
 
-    val intent = Intent(
-        context,
-        AlarmReceiver::class.java
-    )
+        val alarmManager =
+            context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
 
-    intent.putExtra(
-        "medicine",
-        medicineName
-    )
+        val reminderIntent =
+            Intent(context, AlarmReceiver::class.java)
 
-    val pendingIntent =
-        PendingIntent.getBroadcast(
-            context,
-            medicineName.hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or
-                    PendingIntent.FLAG_IMMUTABLE
-        )
+        val reminderPendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                medicineId + 10000,
+                reminderIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE
+            )
 
-    alarmManager.setExactAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP,
-        calendar.timeInMillis,
-        pendingIntent
-    )
+        val alarmIntent =
+            Intent(context, AlarmReceiver::class.java)
 
-    // reminder 10 min before
+        val alarmPendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                medicineId,
+                alarmIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE
+            )
 
-    val reminderIntent = Intent(
-        context,
-        AlarmReceiver::class.java
-    )
+        alarmManager.cancel(reminderPendingIntent)
+        alarmManager.cancel(alarmPendingIntent)
 
-    reminderIntent.putExtra(
-        "medicine",
-        medicineName
-    )
-
-    reminderIntent.putExtra(
-        "isReminder",
-        true
-    )
-
-    val reminderPendingIntent =
-        PendingIntent.getBroadcast(
-            context,
-            medicineName.hashCode() + 1000,
-            reminderIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or
-                    PendingIntent.FLAG_IMMUTABLE
-        )
-
-    alarmManager.setExactAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP,
-        calendar.timeInMillis - (10 * 60 * 1000),
-        reminderPendingIntent
-    )
+        reminderPendingIntent.cancel()
+        alarmPendingIntent.cancel()
+    }
 }
