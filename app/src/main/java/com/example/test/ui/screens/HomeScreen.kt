@@ -3,6 +3,7 @@ package com.example.test.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,16 +31,17 @@ import com.example.test.data.local.Medicine
 import com.example.test.receiver.AlarmScheduler
 import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
 
-    val context = LocalContext.current
-    val dao     = remember { AppDatabase.getDatabase(context).medicineDao() }
+    val context   = LocalContext.current
+    val dao       = remember { AppDatabase.getDatabase(context).medicineDao() }
     val medicines by dao.getAllMedicines().collectAsState(initial = emptyList())
-    val scope   = rememberCoroutineScope()
+    val scope     = rememberCoroutineScope()
 
     var showDialog      by remember { mutableStateOf(false) }
     var editingMedicine by remember { mutableStateOf<Medicine?>(null) }
@@ -52,8 +54,8 @@ fun HomeScreen() {
                 Brush.verticalGradient(
                     colorStops = arrayOf(
                         0.0f to Color(0xFF060D1A),
-                        0.4f to Color(0xFF0A1628),
-                        1.0f to Color(0xFF050C18)
+                        0.5f to Color(0xFF080F1E),
+                        1.0f to Color(0xFF050C17)
                     )
                 )
             )
@@ -62,26 +64,24 @@ fun HomeScreen() {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 22.dp, end = 22.dp,
-                top = 56.dp, bottom = 130.dp
+                start = 18.dp, end = 18.dp,
+                top = 52.dp, bottom = 130.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-            // ── هدر ──────────────────────────────
             item {
                 HeaderCard(count = medicines.size)
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(4.dp))
             }
 
-            // ── empty state ───────────────────────
             if (medicines.isEmpty()) {
                 item { EmptyCard() }
             } else {
                 itemsIndexed(medicines, key = { _, m -> m.id }) { index, medicine ->
                     val visible = remember { mutableStateOf(false) }
                     LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(index * 60L)
+                        delay(index * 60L)
                         visible.value = true
                     }
                     AnimatedVisibility(
@@ -99,25 +99,21 @@ fun HomeScreen() {
             }
         }
 
-        // ── FAB ───────────────────────────────────
+        // ── FAB ──────────────────────────────────────────────────────────────
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp)
+                .padding(bottom = 38.dp)
         ) {
-            // halo
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(76.dp)
                     .align(Alignment.Center)
-                    .background(
-                        Green500.copy(alpha = 0.18f),
-                        CircleShape
-                    )
+                    .background(Green500.copy(alpha = 0.15f), CircleShape)
             )
             FloatingActionButton(
-                onClick = { editingMedicine = null; showDialog = true },
-                modifier       = Modifier.size(60.dp),
+                onClick        = { editingMedicine = null; showDialog = true },
+                modifier       = Modifier.size(58.dp),
                 shape          = CircleShape,
                 containerColor = Green500,
                 contentColor   = Color.White,
@@ -127,39 +123,52 @@ fun HomeScreen() {
             }
         }
 
-        // ── دیالوگ افزودن/ویرایش ─────────────────
+        // ── دیالوگ افزودن/ویرایش ─────────────────────────────────────────────
         if (showDialog) {
             AddMedicineDialog(
                 medicine  = editingMedicine,
                 onDismiss = { showDialog = false; editingMedicine = null },
-                onAdd     = { name, time ->
+                onAdd     = { name, time, cycleHours ->
                     scope.launch {
                         if (editingMedicine == null) {
-                            val m  = Medicine(name = name, time = time)
+                            val m  = Medicine(
+                                name       = name,
+                                time       = time,
+                                cycleHours = cycleHours
+                            )
                             val id = dao.insert(m)
                             AlarmScheduler.scheduleAlarm(context, m.copy(id = id.toInt()))
                         } else {
-                            val u = editingMedicine!!.copy(name = name, time = time)
+                            val u = editingMedicine!!.copy(
+                                name       = name,
+                                time       = time,
+                                cycleHours = cycleHours
+                            )
                             dao.update(u)
-                            AlarmScheduler.cancelAlarm(context, u.id)
+                            AlarmScheduler.cancelAlarm(context, u)
                             AlarmScheduler.scheduleAlarm(context, u)
                         }
-                        showDialog = false; editingMedicine = null
+                        showDialog = false
+                        editingMedicine = null
                     }
                 }
             )
         }
 
-        // ── دیالوگ حذف ───────────────────────────
+        // ── دیالوگ حذف ───────────────────────────────────────────────────────
         deleteMedicine?.let { m ->
             AlertDialog(
-                onDismissRequest = { deleteMedicine = null },
-                containerColor   = Color(0xFF111D30),
+                onDismissRequest  = { deleteMedicine = null },
+                containerColor    = Color(0xFF0B1929),
                 titleContentColor = Color.White,
                 textContentColor  = Slate400,
-                shape = RoundedCornerShape(24.dp),
+                shape             = RoundedCornerShape(24.dp),
                 title = {
-                    Text("حذف دارو", fontFamily = Vazir, fontWeight = FontWeight.Bold)
+                    Text(
+                        "حذف دارو",
+                        fontFamily = Vazir,
+                        fontWeight = FontWeight.Bold
+                    )
                 },
                 text = {
                     Text(
@@ -172,7 +181,7 @@ fun HomeScreen() {
                         onClick = {
                             scope.launch {
                                 dao.delete(m)
-                                AlarmScheduler.cancelAlarm(context, m.id)
+                                AlarmScheduler.cancelAlarm(context, m)
                                 deleteMedicine = null
                             }
                         },
@@ -192,30 +201,45 @@ fun HomeScreen() {
     }
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
+// ── Header ────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun HeaderCard(count: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFF0E2240), Color(0xFF112B50))
-                )
+            .clip(RoundedCornerShape(26.dp))
+            .background(Color(0xFF0A1628))
+            .border(
+                1.dp,
+                Color(0xFF1A3050),
+                RoundedCornerShape(26.dp)
             )
-            .padding(24.dp)
+            .padding(22.dp)
     ) {
-        // نوار سبز تزئینی
+        // glow تزئینی
         Box(
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(90.dp)
+                .align(Alignment.TopStart)
+                .size(100.dp)
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            Green500.copy(alpha = 0.25f),
+                            Green500.copy(alpha = 0.15f),
+                            Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(70.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Blue400.copy(alpha = 0.1f),
                             Color.Transparent
                         )
                     ),
@@ -225,46 +249,65 @@ private fun HeaderCard(count: Int) {
 
         Column {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(Green500.copy(alpha = 0.15f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Medication, null,
-                        tint = Green400,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Text(
                         "یادآور دارو",
-                        fontFamily     = Vazir,
-                        fontWeight     = FontWeight.Bold,
-                        fontSize       = 22.sp,
-                        color          = Color.White
+                        fontFamily = Vazir,
+                        fontWeight = FontWeight.Bold,
+                        fontSize   = 24.sp,
+                        color      = Color.White
                     )
                     Text(
                         "مدیریت هوشمند داروها",
                         fontFamily = Vazir,
                         fontSize   = 13.sp,
-                        color      = Slate400
+                        color      = Slate500
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            Green500.copy(alpha = 0.12f),
+                            RoundedCornerShape(16.dp)
+                        )
+                        .border(
+                            1.dp,
+                            Green500.copy(alpha = 0.2f),
+                            RoundedCornerShape(16.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Medication, null,
+                        tint     = Green400,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }
 
             if (count > 0) {
-                Spacer(Modifier.height(20.dp))
-                HorizontalDivider(color = Slate700.copy(alpha = 0.6f), thickness = 0.5.dp)
+                Spacer(Modifier.height(18.dp))
+                HorizontalDivider(
+                    color     = Color(0xFF1A3050),
+                    thickness = 0.5.dp
+                )
                 Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                    StatChip(label = "داروها", value = "$count")
-                    StatChip(label = "آلارم‌ها", value = "فعال", valueColor = Green400)
-                    StatChip(label = "یادآور", value = "۱۰ دقیقه", valueColor = Blue400)
+
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    StatItem(value = "$count", label = "داروها", color = Color.White)
+                    StatDivider()
+                    StatItem(value = "فعال", label = "آلارم‌ها", color = Green400)
+                    StatDivider()
+                    StatItem(value = "یادآور", label = "۱۰ دقیقه قبل", color = Blue400)
                 }
             }
         }
@@ -272,12 +315,32 @@ private fun HeaderCard(count: Int) {
 }
 
 @Composable
-private fun StatChip(label: String, value: String, valueColor: Color = Color.White) {
+private fun StatItem(value: String, label: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontFamily = Vazir, fontWeight = FontWeight.Bold,
-            fontSize = 16.sp, color = valueColor)
-        Text(label, fontFamily = Vazir, fontSize = 11.sp, color = Slate500)
+        Text(
+            value,
+            fontFamily = Vazir,
+            fontWeight = FontWeight.Bold,
+            fontSize   = 16.sp,
+            color      = color
+        )
+        Text(
+            label,
+            fontFamily = Vazir,
+            fontSize   = 11.sp,
+            color      = Slate500
+        )
     }
+}
+
+@Composable
+private fun StatDivider() {
+    Box(
+        modifier = Modifier
+            .height(28.dp)
+            .width(0.5.dp)
+            .background(Color(0xFF1A3050))
+    )
 }
 
 // ── Empty State ───────────────────────────────────────────────────────────────
@@ -285,22 +348,22 @@ private fun StatChip(label: String, value: String, valueColor: Color = Color.Whi
 @Composable
 private fun EmptyCard() {
     Box(
-        modifier = Modifier
+        modifier        = Modifier
             .fillMaxWidth()
-            .padding(top = 48.dp),
+            .padding(top = 60.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(96.dp)
+                    .size(100.dp)
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                Green500.copy(alpha = 0.2f),
+                                Green500.copy(alpha = 0.15f),
                                 Color.Transparent
                             )
                         ),
@@ -311,25 +374,31 @@ private fun EmptyCard() {
                 Box(
                     modifier = Modifier
                         .size(72.dp)
-                        .background(Color(0xFF0E2240), CircleShape),
+                        .background(Color(0xFF0A1628), CircleShape)
+                        .border(1.dp, Color(0xFF1A3050), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Medication, null,
-                        tint = Green400,
-                        modifier = Modifier.size(36.dp)
+                        tint     = Green400,
+                        modifier = Modifier.size(34.dp)
                     )
                 }
             }
+
             Text(
                 "هنوز دارویی ثبت نشده",
-                fontFamily = Vazir, fontWeight = FontWeight.Bold,
-                fontSize = 20.sp, color = Color.White
+                fontFamily = Vazir,
+                fontWeight = FontWeight.Bold,
+                fontSize   = 20.sp,
+                color      = Color.White
             )
             Text(
                 "روی دکمه + بزن تا اولین دارو رو اضافه کنی",
-                fontFamily = Vazir, fontSize = 14.sp,
-                color = Slate500, textAlign = TextAlign.Center
+                fontFamily = Vazir,
+                fontSize   = 14.sp,
+                color      = Slate500,
+                textAlign  = TextAlign.Center
             )
         }
     }
@@ -343,22 +412,40 @@ private fun MedicineCard(
     onEdit:   () -> Unit,
     onDelete: () -> Unit
 ) {
+    val cycleLabel = when (medicine.cycleHours) {
+        0    -> "روزانه"
+        4    -> "هر ۴ ساعت"
+        6    -> "هر ۶ ساعت"
+        8    -> "هر ۸ ساعت"
+        12   -> "هر ۱۲ ساعت"
+        else -> "هر ${medicine.cycleHours} ساعت"
+    }
+
+    val isCyclic = medicine.cycleHours > 0
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFF101D30))
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFF0A1628))
+            .border(1.dp, Color(0xFF1A3050), RoundedCornerShape(20.dp))
     ) {
-        // نوار رنگی چپ
+        // نوار رنگی سمت راست (RTL)
         Box(
             modifier = Modifier
-                .align(Alignment.CenterStart)
+                .align(Alignment.CenterEnd)
                 .width(3.dp)
-                .height(56.dp)
-                .clip(RoundedCornerShape(topEnd = 3.dp, bottomEnd = 3.dp))
+                .height(50.dp)
+                .clip(
+                    RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp)
+                )
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Green400, Green600)
+                        colors = listOf(
+                            if (isCyclic) Blue400 else Green400,
+                            if (isCyclic) Blue400.copy(alpha = 0.3f)
+                            else Green400.copy(alpha = 0.3f)
+                        )
                     )
                 )
         )
@@ -366,29 +453,39 @@ private fun MedicineCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 15.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically
         ) {
+            // آیکون + اطلاعات
             Row(
                 verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // آیکون
                 Box(
                     modifier = Modifier
                         .size(46.dp)
-                        .background(Green500.copy(alpha = 0.12f), CircleShape),
+                        .background(
+                            if (isCyclic) Blue400.copy(alpha = 0.1f)
+                            else Green500.copy(alpha = 0.1f),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .border(
+                            1.dp,
+                            if (isCyclic) Blue400.copy(alpha = 0.2f)
+                            else Green500.copy(alpha = 0.2f),
+                            RoundedCornerShape(14.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Medication, null,
-                        tint = Green400,
+                        tint     = if (isCyclic) Blue400 else Green400,
                         modifier = Modifier.size(22.dp)
                     )
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(
                         medicine.name,
                         fontFamily = Vazir,
@@ -397,21 +494,51 @@ private fun MedicineCard(
                         color      = Color.White
                     )
                     Row(
-                        verticalAlignment     = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment     = Alignment.CenterVertically
                     ) {
+                        // ساعت
+                        Row(
+                            verticalAlignment     = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(5.dp)
+                                    .background(Blue400, CircleShape)
+                            )
+                            Text(
+                                medicine.time,
+                                fontFamily = Vazir,
+                                fontSize   = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color      = Blue400
+                            )
+                        }
+
+                        // badge سیکل
                         Box(
                             modifier = Modifier
-                                .size(6.dp)
-                                .background(Blue400, CircleShape)
-                        )
-                        Text(
-                            medicine.time,
-                            fontFamily = Vazir,
-                            fontSize   = 13.sp,
-                            color      = Blue400,
-                            fontWeight = FontWeight.Bold
-                        )
+                                .background(
+                                    if (isCyclic) Blue400.copy(alpha = 0.1f)
+                                    else Green500.copy(alpha = 0.08f),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .border(
+                                    0.5.dp,
+                                    if (isCyclic) Blue400.copy(alpha = 0.2f)
+                                    else Green500.copy(alpha = 0.15f),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 7.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                cycleLabel,
+                                fontFamily = Vazir,
+                                fontSize   = 11.sp,
+                                color      = if (isCyclic) Blue400 else Green400
+                            )
+                        }
                     }
                 }
             }
@@ -422,19 +549,25 @@ private fun MedicineCard(
                     onClick  = onEdit,
                     modifier = Modifier
                         .size(36.dp)
-                        .background(Blue400.copy(alpha = 0.1f), CircleShape)
+                        .background(Blue400.copy(alpha = 0.08f), CircleShape)
                 ) {
-                    Icon(Icons.Default.Edit, null,
-                        tint = Blue400, modifier = Modifier.size(17.dp))
+                    Icon(
+                        Icons.Default.Edit, null,
+                        tint     = Blue400,
+                        modifier = Modifier.size(17.dp)
+                    )
                 }
                 IconButton(
                     onClick  = onDelete,
                     modifier = Modifier
                         .size(36.dp)
-                        .background(Red400.copy(alpha = 0.1f), CircleShape)
+                        .background(Red400.copy(alpha = 0.08f), CircleShape)
                 ) {
-                    Icon(Icons.Default.Delete, null,
-                        tint = Red400, modifier = Modifier.size(17.dp))
+                    Icon(
+                        Icons.Default.Delete, null,
+                        tint     = Red400,
+                        modifier = Modifier.size(17.dp)
+                    )
                 }
             }
         }
