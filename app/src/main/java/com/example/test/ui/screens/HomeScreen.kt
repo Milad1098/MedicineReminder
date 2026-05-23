@@ -136,7 +136,10 @@ fun HomeScreen(
                             onDelete = {
 
                                 scope.launch {
-
+                                    AlarmScheduler.cancel(
+                                        context,
+                                        medicine.id
+                                    )
                                     dao.delete(medicine)
 
                                     medicines =
