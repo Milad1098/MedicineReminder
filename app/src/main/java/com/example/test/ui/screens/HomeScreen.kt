@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import com.example.test.alarm.AlarmScheduler
 import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
-import com.example.test.ui.components.AddMedicineBottomSheet
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.HeaderSection
 import com.example.test.ui.components.MedicineCard
@@ -179,23 +178,26 @@ fun HomeScreen(
 
     if (showBottomSheet) {
 
-        AddMedicineBottomSheet(
-
+        AddMedicineDialog(
+    
             medicine = editingMedicine,
-
+    
             onDismiss = {
-
+    
                 showBottomSheet = false
             },
-
-            onSave = { name, time, hour, minute ->
-
+    
+            onSave = { name: String,
+                       time: String,
+                       hour: Int,
+                       minute: Int ->
+    
                 scope.launch {
-
+    
                     try {
-
+    
                         if (editingMedicine == null) {
-
+    
                             val insertedId =
                                 dao.insert(
                                     Medicine(
@@ -203,7 +205,7 @@ fun HomeScreen(
                                         time = time.trim()
                                     )
                                 ).toInt()
-
+    
                             AlarmScheduler.schedule(
                                 context = context,
                                 medicineId = insertedId,
@@ -211,22 +213,22 @@ fun HomeScreen(
                                 hour = hour,
                                 minute = minute
                             )
-
+    
                         } else {
-
+    
                             val updatedMedicine =
                                 editingMedicine!!.copy(
                                     name = name.trim(),
                                     time = time.trim()
                                 )
-
+    
                             dao.update(updatedMedicine)
-
+    
                             AlarmScheduler.cancel(
                                 context = context,
                                 medicineId = updatedMedicine.id
                             )
-
+    
                             AlarmScheduler.schedule(
                                 context = context,
                                 medicineId = updatedMedicine.id,
@@ -235,15 +237,15 @@ fun HomeScreen(
                                 minute = minute
                             )
                         }
-
+    
                         medicines = dao.getAll()
-
+    
                     } catch (e: Exception) {
-
+    
                         e.printStackTrace()
                     }
                 }
-
+    
                 showBottomSheet = false
             }
         )
