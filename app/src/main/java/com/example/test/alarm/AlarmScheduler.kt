@@ -1,4 +1,4 @@
-package com.example.test.receiver
+package com.example.test.alarm
 
 import android.app.AlarmManager
 import android.app.PendingIntent
