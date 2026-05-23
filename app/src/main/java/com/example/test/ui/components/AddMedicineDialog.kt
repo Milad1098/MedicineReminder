@@ -96,6 +96,7 @@ fun AddMedicineDialog(
                         val cal = Calendar.getInstance()
                         TimePickerDialog(
                             context,
+                            android.R.style.Theme_Material_Dialog, // ← این تم
                             { _, h, m -> time = "%02d:%02d".format(h, m) },
                             cal.get(Calendar.HOUR_OF_DAY),
                             cal.get(Calendar.MINUTE),
