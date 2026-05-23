@@ -10,14 +10,20 @@ import androidx.room.Update
 interface MedicineDao {
 
     @Insert
-    suspend fun insert(medicine: Medicine)
+    suspend fun insert(
+        medicine: Medicine
+    ): Long
 
     @Update
-    suspend fun update(medicine: Medicine)
+    suspend fun update(
+        medicine: Medicine
+    )
 
     @Delete
-    suspend fun delete(medicine: Medicine)
+    suspend fun delete(
+        medicine: Medicine
+    )
 
-    @Query("SELECT * FROM Medicine")
+    @Query("SELECT * FROM medicines ORDER BY time ASC")
     suspend fun getAll(): List<Medicine>
 }
