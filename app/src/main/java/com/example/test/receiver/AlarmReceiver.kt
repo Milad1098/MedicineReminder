@@ -17,9 +17,7 @@ class AlarmReceiver : BroadcastReceiver() {
         intent: Intent
     ) {
 
-        val medicineName =
-            intent.getStringExtra("medicine")
-                ?: "دارو"
+        val medicineName = intent.getStringExtra("medicine_name") ?: "دارو"
 
         val medicineId =
             intent.getIntExtra("medicine_id", 0)
