@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.example.test.AlarmActivity
+import com.example.test.MainActivity
 import com.example.test.R
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -18,144 +19,81 @@ class AlarmReceiver : BroadcastReceiver() {
     ) {
 
         val medicineName =
-            intent.getStringExtra(
-                "medicine"
-            ) ?: "دارو"
+            intent.getStringExtra("medicine")
+                ?: "دارو"
+
+        val medicineId =
+            intent.getIntExtra("medicine_id", 0)
 
         val isReminder =
-            intent.getBooleanExtra(
-                "isReminder",
-                false
-            )
+            intent.getBooleanExtra("isReminder", false)
+
+        val channelId = "medicine_channel"
 
         val manager =
             context.getSystemService(
                 Context.NOTIFICATION_SERVICE
             ) as NotificationManager
 
-        // reminder notification
+        val channel = NotificationChannel(
+            channelId,
+            "Medicine Reminder",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+
+        manager.createNotificationChannel(channel)
+
+        val openAppIntent =
+            Intent(context, MainActivity::class.java)
+
+        val openPendingIntent =
+            PendingIntent.getActivity(
+                context,
+                medicineId,
+                openAppIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE
+            )
 
         if (isReminder) {
 
-            val reminderChannel =
-                NotificationChannel(
-                    "medicine_reminder",
-                    "Medicine Reminder",
-                    NotificationManager.IMPORTANCE_HIGH
-                )
-
-            manager.createNotificationChannel(
-                reminderChannel
-            )
-
-            val reminderNotification =
+            val notification =
                 NotificationCompat.Builder(
                     context,
-                    "medicine_reminder"
+                    channelId
                 )
-                    .setSmallIcon(
-                        android.R.drawable.ic_dialog_info
-                    )
-                    .setContentTitle(
-                        "یادآوری مصرف دارو"
-                    )
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle("یادآوری دارو")
                     .setContentText(
-                        "۱۰ دقیقه تا مصرف $medicineName باقی مانده"
+                        "کمتر از 10 دقیقه تا مصرف $medicineName باقی مانده"
+                    )
+                    .setPriority(
+                        NotificationCompat.PRIORITY_HIGH
                     )
                     .setOngoing(true)
+                    .setAutoCancel(true)
+                    .setContentIntent(openPendingIntent)
                     .build()
 
             manager.notify(
-                medicineName.hashCode(),
-                reminderNotification
+                medicineId + 5000,
+                notification
             )
 
             return
         }
 
-        // full screen alarm
-
-        val channelId = "medicine_alarm"
-
-        val channel =
-            NotificationChannel(
-                channelId,
-                "Medicine Alarm",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-
-        manager.createNotificationChannel(channel)
-
         val fullScreenIntent =
-            Intent(
-                context,
-                AlarmActivity::class.java
-            )
-
-        fullScreenIntent.putExtra(
-            "medicine",
-            medicineName
-        )
-
-        fullScreenIntent.flags =
-            Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP
-
-        val fullScreenPendingIntent =
-            PendingIntent.getActivity(
-                context,
-                999,
-                fullScreenIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or
-                        PendingIntent.FLAG_IMMUTABLE
-            )
-
-        val notification =
-            NotificationCompat.Builder(
-                context,
-                channelId
-            )
-                .setSmallIcon(
-                    android.R.drawable.ic_dialog_info
+            Intent(context, AlarmActivity::class.java).apply {
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP
                 )
-                .setContentTitle(
-                    "زمان مصرف دارو"
-                )
-                .setContentText(
-                    medicineName
-                )
-                .setPriority(
-                    NotificationCompat.PRIORITY_MAX
-                )
-                .setCategory(
-                    NotificationCompat.CATEGORY_ALARM
-                )
-                .setFullScreenIntent(
-                    fullScreenPendingIntent,
-                    true
-                )
-                .setAutoCancel(true)
-                .build()
 
-        manager.notify(
-            2001,
-            notification
-        )
+                putExtra("medicine", medicineName)
+                putExtra("medicine_id", medicineId)
+            }
 
-        val activityIntent =
-            Intent(
-                context,
-                AlarmActivity::class.java
-            )
-
-        activityIntent.putExtra(
-            "medicine",
-            medicineName
-        )
-
-        activityIntent.flags =
-            Intent.FLAG_ACTIVITY_NEW_TASK
-
-        context.startActivity(activityIntent)
+        context.startActivity(fullScreenIntent)
     }
 }
