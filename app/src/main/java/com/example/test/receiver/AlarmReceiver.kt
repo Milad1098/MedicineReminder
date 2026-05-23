@@ -17,66 +17,66 @@ class AlarmReceiver : BroadcastReceiver() {
         val medicineName = intent.getStringExtra("medicine_name") ?: "دارو"
         val medicineId = intent.getIntExtra("medicine_id", 0)
         val isReminder = intent.getBooleanExtra("isReminder", false)
+        val minutesLeft = intent.getIntExtra("minutes_left", 10)
 
         val manager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // ساخت channel آلارم
-        val alarmChannel = NotificationChannel(
-            "medicine_alarm_channel",
-            "آلارم دارو",
+        NotificationChannel(
+            "medicine_alarm_channel", "آلارم دارو",
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             enableVibration(true)
-            enableLights(true)
             setBypassDnd(true)
             lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+            manager.createNotificationChannel(this)
         }
-        manager.createNotificationChannel(alarmChannel)
 
-        // ساخت channel reminder
-        val reminderChannel = NotificationChannel(
-            "medicine_reminder_channel",
-            "یادآور دارو",
+        NotificationChannel(
+            "medicine_reminder_channel", "یادآور دارو",
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             enableVibration(true)
+            manager.createNotificationChannel(this)
         }
-        manager.createNotificationChannel(reminderChannel)
 
         if (isReminder) {
-            // نوتیف ۱۰ دقیقه قبل
-            val openIntent = PendingIntent.getActivity(
-                context,
-                medicineId + 20000,
+            val openPending = PendingIntent.getActivity(
+                context, medicineId + 20000,
                 Intent(context, MainActivity::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
+            val text = when (minutesLeft) {
+                10 -> "۱۰ دقیقه دیگر وقت مصرف $medicineName است"
+                5  -> "⚡ ۵ دقیقه دیگر وقت مصرف $medicineName است"
+                1  -> "🔴 ۱ دقیقه دیگر وقت مصرف $medicineName است"
+                else -> "$minutesLeft دقیقه دیگر وقت مصرف $medicineName است"
+            }
+
             val notification = NotificationCompat.Builder(context, "medicine_reminder_channel")
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("⏰ یادآور دارو")
-                .setContentText("۱۰ دقیقه دیگر وقت مصرف $medicineName است")
+                .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
-                .setContentIntent(openIntent)
+                .setContentIntent(openPending)
                 .build()
 
             manager.notify(medicineId + 5000, notification)
             return
         }
 
-        // --- آلارم اصلی با Full Screen Intent ---
-        val fullScreenIntent = Intent(context, AlarmActivity::class.java).apply {
+        // آلارم اصلی — Full Screen Intent
+        val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
             putExtra("medicine_name", medicineName)
             putExtra("medicine_id", medicineId)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
 
-        val fullScreenPendingIntent = PendingIntent.getActivity(
-            context,
-            medicineId,
-            fullScreenIntent,
+        val fullScreenPending = PendingIntent.getActivity(
+            context, medicineId,
+            alarmIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -87,16 +87,16 @@ class AlarmReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
-            .setAutoCancel(false)
+            .setFullScreenIntent(fullScreenPending, true)
             .setOngoing(true)
+            .setAutoCancel(false)
             .build()
 
         manager.notify(medicineId + 1000, notification)
 
-        // هم نوتیف میده هم activity رو باز میکنه
+        // هم نوتیف هم activity مستقیم
         try {
-            context.startActivity(fullScreenIntent)
+            context.startActivity(alarmIntent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
