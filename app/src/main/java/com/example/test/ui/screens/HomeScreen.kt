@@ -43,7 +43,13 @@ fun HomeScreen() {
     var showDialog by remember { mutableStateOf(false) }
     var editingMedicine by remember { mutableStateOf<Medicine?>(null) }
     var deleteMedicine by remember { mutableStateOf<Medicine?>(null) }
-
+    // موقتی برای تست - بعداً حذف کن
+    var showTest by remember { mutableStateOf(false) }
+        if (showTest) {
+            TestScreen()
+            return
+        }
+Button(onClick = { showTest = true }) { Text("باز کردن صفحه تست") }
     Box(
         modifier = Modifier
             .fillMaxSize()
