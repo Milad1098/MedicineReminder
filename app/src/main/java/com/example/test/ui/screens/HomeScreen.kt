@@ -17,7 +17,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,9 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 
 import com.example.test.data.local.AppDatabase
@@ -43,7 +42,6 @@ import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.HeaderSection
 import com.example.test.ui.components.MedicineCard
-import com.example.test.ui.theme.Vazir
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,8 +115,7 @@ fun HomeScreen() {
 
             LazyColumn(
 
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
 
                 verticalArrangement = Arrangement.spacedBy(12.dp),
 
@@ -134,8 +131,7 @@ fun HomeScreen() {
                 item {
 
                     Spacer(
-                        modifier = Modifier
-                            .height(8.dp)
+                        modifier = Modifier.height(8.dp)
                     )
                 }
 
@@ -171,8 +167,7 @@ fun HomeScreen() {
                 item {
 
                     Spacer(
-                        modifier = Modifier
-                            .height(100.dp)
+                        modifier = Modifier.height(100.dp)
                     )
                 }
             }
@@ -247,17 +242,11 @@ fun HomeScreen() {
                     },
 
                     title = {
-                        Text(
-                            text = "حذف دارو",
-                            fontFamily = Vazir
-                        )
+                        Text("حذف دارو")
                     },
 
                     text = {
-                        Text(
-                            text = "آیا مطمئن هستید؟",
-                            fontFamily = Vazir
-                        )
+                        Text("آیا مطمئن هستید؟")
                     },
 
                     confirmButton = {
@@ -283,7 +272,6 @@ fun HomeScreen() {
 
                             Text(
                                 text = "حذف",
-                                fontFamily = Vazir,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -299,10 +287,7 @@ fun HomeScreen() {
 
                         ) {
 
-                            Text(
-                                text = "لغو",
-                                fontFamily = Vazir
-                            )
+                            Text("لغو")
                         }
                     }
                 )
