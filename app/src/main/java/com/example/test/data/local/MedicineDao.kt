@@ -5,9 +5,15 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MedicineDao {
+
+    @Query(
+        "SELECT * FROM medicines ORDER BY id DESC"
+    )
+    fun getAllMedicines(): Flow<List<Medicine>>
 
     @Insert
     suspend fun insert(
@@ -23,7 +29,4 @@ interface MedicineDao {
     suspend fun delete(
         medicine: Medicine
     )
-
-    @Query("SELECT * FROM medicines ORDER BY time ASC")
-    suspend fun getAll(): List<Medicine>
 }
