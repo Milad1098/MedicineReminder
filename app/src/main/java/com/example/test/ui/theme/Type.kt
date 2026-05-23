@@ -10,8 +10,12 @@ import com.example.test.R
 
 val Vazir = FontFamily(
     Font(
-        resId = R.font.vazir,
+        resId = R.font.vazirmatn_regular,
         weight = FontWeight.Normal
+    ),
+    Font(
+        resId = R.font.vazirmatn_bold,
+        weight = FontWeight.Bold
     )
 )
 
