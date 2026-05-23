@@ -1,10 +1,11 @@
 package com.example.test.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,7 +29,7 @@ import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
 import com.example.test.receiver.AlarmScheduler
 import com.example.test.ui.components.AddMedicineDialog
-import com.example.test.ui.theme.Vazir
+import com.example.test.ui.theme.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,29 +37,23 @@ import kotlinx.coroutines.launch
 fun HomeScreen() {
 
     val context = LocalContext.current
-    val dao = remember { AppDatabase.getDatabase(context).medicineDao() }
+    val dao     = remember { AppDatabase.getDatabase(context).medicineDao() }
     val medicines by dao.getAllMedicines().collectAsState(initial = emptyList())
-    val scope = rememberCoroutineScope()
+    val scope   = rememberCoroutineScope()
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog      by remember { mutableStateOf(false) }
     var editingMedicine by remember { mutableStateOf<Medicine?>(null) }
-    var deleteMedicine by remember { mutableStateOf<Medicine?>(null) }
-    // موقتی برای تست - بعداً حذف کن
-    var showTest by remember { mutableStateOf(false) }
-        if (showTest) {
-            TestScreen()
-            return
-        }
-Button(onClick = { showTest = true }) { Text("باز کردن صفحه تست") }
+    var deleteMedicine  by remember { mutableStateOf<Medicine?>(null) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF060B18),
-                        Color(0xFF0A1628),
-                        Color(0xFF0F1F35)
+                    colorStops = arrayOf(
+                        0.0f to Color(0xFF060D1A),
+                        0.4f to Color(0xFF0A1628),
+                        1.0f to Color(0xFF050C18)
                     )
                 )
             )
@@ -67,155 +62,36 @@ Button(onClick = { showTest = true }) { Text("باز کردن صفحه تست") 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
-                top = 60.dp,
-                bottom = 120.dp
+                start = 22.dp, end = 22.dp,
+                top = 56.dp, bottom = 130.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            // هدر
+            // ── هدر ──────────────────────────────
             item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "یادآور دارو",
-                                fontFamily = Vazir,
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "مدیریت هوشمند داروها",
-                                fontFamily = Vazir,
-                                fontSize = 14.sp,
-                                color = Color(0xFF64748B)
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .background(
-                                    Color(0xFF22C55E).copy(alpha = 0.15f),
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("💊", fontSize = 24.sp)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // آمار
-                    if (medicines.isNotEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color(0xFF166534).copy(alpha = 0.6f),
-                                            Color(0xFF14532D).copy(alpha = 0.4f)
-                                        )
-                                    )
-                                )
-                                .padding(20.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Text("📋", fontSize = 20.sp)
-                                Column {
-                                    Text(
-                                        text = "${medicines.size} دارو ثبت شده",
-                                        fontFamily = Vazir,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF86EFAC),
-                                        fontSize = 15.sp
-                                    )
-                                    Text(
-                                        text = "آلارم‌ها فعال هستند",
-                                        fontFamily = Vazir,
-                                        color = Color(0xFF4ADE80).copy(alpha = 0.7f),
-                                        fontSize = 13.sp
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
+                HeaderCard(count = medicines.size)
+                Spacer(Modifier.height(8.dp))
             }
 
+            // ── empty state ───────────────────────
             if (medicines.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 60.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .background(
-                                        Color(0xFF1E293B),
-                                        CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Medication,
-                                    contentDescription = null,
-                                    tint = Color(0xFF22C55E),
-                                    modifier = Modifier.size(48.dp)
-                                )
-                            }
-                            Text(
-                                text = "هنوز دارویی ثبت نشده",
-                                fontFamily = Vazir,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = "روی دکمه + بزن تا اولین دارو رو اضافه کنی",
-                                fontFamily = Vazir,
-                                fontSize = 14.sp,
-                                color = Color(0xFF64748B),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
+                item { EmptyCard() }
             } else {
-                items(medicines, key = { it.id }) { medicine ->
+                itemsIndexed(medicines, key = { _, m -> m.id }) { index, medicine ->
+                    val visible = remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(index * 60L)
+                        visible.value = true
+                    }
                     AnimatedVisibility(
-                        visible = true,
-                        enter = fadeIn() + slideInVertically()
+                        visible = visible.value,
+                        enter = fadeIn(tween(300)) +
+                                slideInVertically(tween(300)) { it / 2 }
                     ) {
-                        MedicineCardNew(
+                        MedicineCard(
                             medicine = medicine,
-                            onEdit = {
-                                editingMedicine = medicine
-                                showDialog = true
-                            },
+                            onEdit   = { editingMedicine = medicine; showDialog = true },
                             onDelete = { deleteMedicine = medicine }
                         )
                     }
@@ -223,72 +99,71 @@ Button(onClick = { showTest = true }) { Text("باز کردن صفحه تست") 
             }
         }
 
-        // دکمه افزودن
-        FloatingActionButton(
-            onClick = {
-                editingMedicine = null
-                showDialog = true
-            },
+        // ── FAB ───────────────────────────────────
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 36.dp)
-                .size(64.dp),
-            shape = CircleShape,
-            containerColor = Color(0xFF22C55E),
-            contentColor = Color.White,
-            elevation = FloatingActionButtonDefaults.elevation(12.dp)
+                .padding(bottom = 40.dp)
         ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
+            // halo
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.Center)
+                    .background(
+                        Green500.copy(alpha = 0.18f),
+                        CircleShape
+                    )
             )
+            FloatingActionButton(
+                onClick = { editingMedicine = null; showDialog = true },
+                modifier       = Modifier.size(60.dp),
+                shape          = CircleShape,
+                containerColor = Green500,
+                contentColor   = Color.White,
+                elevation      = FloatingActionButtonDefaults.elevation(0.dp)
+            ) {
+                Icon(Icons.Default.Add, null, modifier = Modifier.size(26.dp))
+            }
         }
 
-        // دیالوگ افزودن/ویرایش
+        // ── دیالوگ افزودن/ویرایش ─────────────────
         if (showDialog) {
             AddMedicineDialog(
-                medicine = editingMedicine,
-                onDismiss = {
-                    showDialog = false
-                    editingMedicine = null
-                },
-                onAdd = { name, time ->
+                medicine  = editingMedicine,
+                onDismiss = { showDialog = false; editingMedicine = null },
+                onAdd     = { name, time ->
                     scope.launch {
                         if (editingMedicine == null) {
-                            val medicine = Medicine(name = name, time = time)
-                            val id = dao.insert(medicine)
-                            AlarmScheduler.scheduleAlarm(context, medicine.copy(id = id.toInt()))
+                            val m  = Medicine(name = name, time = time)
+                            val id = dao.insert(m)
+                            AlarmScheduler.scheduleAlarm(context, m.copy(id = id.toInt()))
                         } else {
-                            val updated = editingMedicine!!.copy(name = name, time = time)
-                            dao.update(updated)
-                            AlarmScheduler.cancelAlarm(context, updated.id)
-                            AlarmScheduler.scheduleAlarm(context, updated)
+                            val u = editingMedicine!!.copy(name = name, time = time)
+                            dao.update(u)
+                            AlarmScheduler.cancelAlarm(context, u.id)
+                            AlarmScheduler.scheduleAlarm(context, u)
                         }
-                        showDialog = false
-                        editingMedicine = null
+                        showDialog = false; editingMedicine = null
                     }
                 }
             )
         }
 
-        // دیالوگ حذف
-        deleteMedicine?.let { medicine ->
+        // ── دیالوگ حذف ───────────────────────────
+        deleteMedicine?.let { m ->
             AlertDialog(
                 onDismissRequest = { deleteMedicine = null },
-                containerColor = Color(0xFF1E293B),
+                containerColor   = Color(0xFF111D30),
                 titleContentColor = Color.White,
-                textContentColor = Color(0xFFCBD5E1),
+                textContentColor  = Slate400,
+                shape = RoundedCornerShape(24.dp),
                 title = {
-                    Text(
-                        text = "حذف دارو",
-                        fontFamily = Vazir,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("حذف دارو", fontFamily = Vazir, fontWeight = FontWeight.Bold)
                 },
                 text = {
                     Text(
-                        text = "«${medicine.name}» حذف شود؟",
+                        "«${m.name}» از لیست حذف شود؟",
                         fontFamily = Vazir
                     )
                 },
@@ -296,22 +171,20 @@ Button(onClick = { showTest = true }) { Text("باز کردن صفحه تست") 
                     Button(
                         onClick = {
                             scope.launch {
-                                dao.delete(medicine)
-                                AlarmScheduler.cancelAlarm(context, medicine.id)
+                                dao.delete(m)
+                                AlarmScheduler.cancelAlarm(context, m.id)
                                 deleteMedicine = null
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFEF4444)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Red400),
+                        shape  = RoundedCornerShape(14.dp)
                     ) {
                         Text("حذف", fontFamily = Vazir, fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { deleteMedicine = null }) {
-                        Text("لغو", fontFamily = Vazir, color = Color(0xFF94A3B8))
+                        Text("لغو", fontFamily = Vazir, color = Slate400)
                     }
                 }
             )
@@ -319,115 +192,249 @@ Button(onClick = { showTest = true }) { Text("باز کردن صفحه تست") 
     }
 }
 
+// ── Header ───────────────────────────────────────────────────────────────────
+
 @Composable
-fun MedicineCardNew(
+private fun HeaderCard(count: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF0E2240), Color(0xFF112B50))
+                )
+            )
+            .padding(24.dp)
+    ) {
+        // نوار سبز تزئینی
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(90.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Green500.copy(alpha = 0.25f),
+                            Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+        )
+
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(Green500.copy(alpha = 0.15f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Medication, null,
+                        tint = Green400,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Column {
+                    Text(
+                        "یادآور دارو",
+                        fontFamily     = Vazir,
+                        fontWeight     = FontWeight.Bold,
+                        fontSize       = 22.sp,
+                        color          = Color.White
+                    )
+                    Text(
+                        "مدیریت هوشمند داروها",
+                        fontFamily = Vazir,
+                        fontSize   = 13.sp,
+                        color      = Slate400
+                    )
+                }
+            }
+
+            if (count > 0) {
+                Spacer(Modifier.height(20.dp))
+                HorizontalDivider(color = Slate700.copy(alpha = 0.6f), thickness = 0.5.dp)
+                Spacer(Modifier.height(16.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    StatChip(label = "داروها", value = "$count")
+                    StatChip(label = "آلارم‌ها", value = "فعال", valueColor = Green400)
+                    StatChip(label = "یادآور", value = "۱۰ دقیقه", valueColor = Blue400)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatChip(label: String, value: String, valueColor: Color = Color.White) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, fontFamily = Vazir, fontWeight = FontWeight.Bold,
+            fontSize = 16.sp, color = valueColor)
+        Text(label, fontFamily = Vazir, fontSize = 11.sp, color = Slate500)
+    }
+}
+
+// ── Empty State ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun EmptyCard() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 48.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Green500.copy(alpha = 0.2f),
+                                Color.Transparent
+                            )
+                        ),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .background(Color(0xFF0E2240), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Medication, null,
+                        tint = Green400,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+            }
+            Text(
+                "هنوز دارویی ثبت نشده",
+                fontFamily = Vazir, fontWeight = FontWeight.Bold,
+                fontSize = 20.sp, color = Color.White
+            )
+            Text(
+                "روی دکمه + بزن تا اولین دارو رو اضافه کنی",
+                fontFamily = Vazir, fontSize = 14.sp,
+                color = Slate500, textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+// ── Medicine Card ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun MedicineCard(
     medicine: Medicine,
-    onEdit: () -> Unit,
+    onEdit:   () -> Unit,
     onDelete: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF1A2744),
-                        Color(0xFF1E2D4A)
-                    )
-                )
-            )
+            .clip(RoundedCornerShape(22.dp))
+            .background(Color(0xFF101D30))
     ) {
-        // نوار سبز چپ
+        // نوار رنگی چپ
         Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .width(4.dp)
-                .height(60.dp)
-                .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                .background(Color(0xFF22C55E))
+                .width(3.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(topEnd = 3.dp, bottomEnd = 3.dp))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Green400, Green600)
+                    )
+                )
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .padding(horizontal = 18.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment     = Alignment.CenterVertically
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                // آیکون
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            Color(0xFF22C55E).copy(alpha = 0.15f),
-                            CircleShape
-                        ),
+                        .size(46.dp)
+                        .background(Green500.copy(alpha = 0.12f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("💊", fontSize = 20.sp)
+                    Icon(
+                        Icons.Default.Medication, null,
+                        tint = Green400,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
 
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = medicine.name,
+                        medicine.name,
                         fontFamily = Vazir,
-                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontSize   = 16.sp,
+                        color      = Color.White
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        Text("🕐", fontSize = 12.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(Blue400, CircleShape)
+                        )
                         Text(
-                            text = medicine.time,
+                            medicine.time,
                             fontFamily = Vazir,
-                            fontSize = 13.sp,
-                            color = Color(0xFF38BDF8)
+                            fontSize   = 13.sp,
+                            color      = Blue400,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            // دکمه‌ها
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 IconButton(
-                    onClick = onEdit,
+                    onClick  = onEdit,
                     modifier = Modifier
-                        .size(38.dp)
-                        .background(
-                            Color(0xFF38BDF8).copy(alpha = 0.1f),
-                            CircleShape
-                        )
+                        .size(36.dp)
+                        .background(Blue400.copy(alpha = 0.1f), CircleShape)
                 ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = null,
-                        tint = Color(0xFF38BDF8),
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(Icons.Default.Edit, null,
+                        tint = Blue400, modifier = Modifier.size(17.dp))
                 }
-
                 IconButton(
-                    onClick = onDelete,
+                    onClick  = onDelete,
                     modifier = Modifier
-                        .size(38.dp)
-                        .background(
-                            Color(0xFFEF4444).copy(alpha = 0.1f),
-                            CircleShape
-                        )
+                        .size(36.dp)
+                        .background(Red400.copy(alpha = 0.1f), CircleShape)
                 ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = null,
-                        tint = Color(0xFFEF4444),
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(Icons.Default.Delete, null,
+                        tint = Red400, modifier = Modifier.size(17.dp))
                 }
             }
         }
