@@ -6,16 +6,17 @@ import android.content.Intent
 
 class BootReceiver : BroadcastReceiver() {
 
-    override fun onReceive(
-        context: Context,
-        intent: Intent
-    ) {
-
+    override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-
-            // بعدا اینجا آلارم‌ها را از دیتابیس می‌خوانیم
-            // و دوباره schedule می‌کنیم
-
+    
+            val scope = CoroutineScope(Dispatchers.IO)
+            scope.launch {
+                val db = AppDatabase.getDatabase(context)
+                val medicines = db.medicineDao().getAllMedicinesSync()
+                medicines.forEach { medicine ->
+                    AlarmScheduler.scheduleAlarm(context, medicine)
+                }
+            }
         }
     }
 }
