@@ -5,27 +5,39 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF22C55E),
-    onPrimary = Color.White,
-    secondary = Color(0xFF38BDF8),
-    onSecondary = Color.White,
-    background = Color(0xFF0F172A),
-    onBackground = Color.White,
-    surface = Color(0xFF1E293B),
-    onSurface = Color.White,
-    surfaceVariant = Color(0xFF334155),
-    onSurfaceVariant = Color(0xFFCBD5E1),
-    outline = Color(0xFF475569),
-    error = Color(0xFFEF4444),
-    onError = Color.White
+val Green400 = Color(0xFF4ADE80)
+val Green500 = Color(0xFF22C55E)
+val Green600 = Color(0xFF16A34A)
+val Blue400  = Color(0xFF38BDF8)
+val Red400   = Color(0xFFEF4444)
+val Slate900 = Color(0xFF0F172A)
+val Slate800 = Color(0xFF1E293B)
+val Slate700 = Color(0xFF334155)
+val Slate500 = Color(0xFF64748B)
+val Slate400 = Color(0xFF94A3B8)
+val Slate200 = Color(0xFFCBD5E1)
+
+private val DarkColors = darkColorScheme(
+    primary          = Green500,
+    onPrimary        = Color.White,
+    secondary        = Blue400,
+    onSecondary      = Color.White,
+    background       = Slate900,
+    onBackground     = Color.White,
+    surface          = Slate800,
+    onSurface        = Color.White,
+    surfaceVariant   = Slate700,
+    onSurfaceVariant = Slate200,
+    outline          = Slate700,
+    error            = Red400,
+    onError          = Color.White,
 )
 
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = DarkColorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = DarkColors,
+        typography  = Typography,
+        content     = content
     )
 }
