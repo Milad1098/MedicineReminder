@@ -122,15 +122,11 @@ fun HomeScreen() {
                 }
 
                 if (medicines.isEmpty()) {
-
                     item {
                         EmptyState()
                     }
-
                 } else {
-
                     items(medicines) { medicine ->
-
                         MedicineCard(
                             medicine = medicine,
                             fontFamily = Vazir,
@@ -207,23 +203,24 @@ fun HomeScreen() {
             }
 
             deleteMedicine?.let { medicine ->
-
                 AlertDialog(
                     onDismissRequest = {
                         deleteMedicine = null
                     },
                     title = {
-                        Text(text = "حذف دارو")
+                        Text(
+                            text = "حذف دارو"
+                        )
                     },
                     text = {
-                        Text(text = "آیا مطمئن هستید؟")
+                        Text(
+                            text = "آیا مطمئن هستید؟"
+                        )
                     },
                     confirmButton = {
                         Button(
                             onClick = {
-
                                 scope.launch {
-
                                     dao.delete(medicine)
 
                                     AlarmScheduler.cancelAlarm(
