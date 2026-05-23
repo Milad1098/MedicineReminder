@@ -9,7 +9,6 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.example.test.AlarmActivity
 import com.example.test.MainActivity
-import com.example.test.R
 
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -26,7 +25,10 @@ class AlarmReceiver : BroadcastReceiver() {
             intent.getIntExtra("medicine_id", 0)
 
         val isReminder =
-            intent.getBooleanExtra("isReminder", false)
+            intent.getBooleanExtra(
+                "isReminder",
+                false
+            )
 
         val channelId = "medicine_channel"
 
@@ -43,14 +45,17 @@ class AlarmReceiver : BroadcastReceiver() {
 
         manager.createNotificationChannel(channel)
 
-        val openAppIntent =
-            Intent(context, MainActivity::class.java)
+        val openIntent =
+            Intent(
+                context,
+                MainActivity::class.java
+            )
 
         val openPendingIntent =
             PendingIntent.getActivity(
                 context,
                 medicineId,
-                openAppIntent,
+                openIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or
                         PendingIntent.FLAG_IMMUTABLE
             )
@@ -62,17 +67,23 @@ class AlarmReceiver : BroadcastReceiver() {
                     context,
                     channelId
                 )
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle("یادآوری دارو")
+                    .setSmallIcon(
+                        android.R.drawable.ic_dialog_info
+                    )
+                    .setContentTitle(
+                        "یادآوری مصرف دارو"
+                    )
                     .setContentText(
                         "کمتر از 10 دقیقه تا مصرف $medicineName باقی مانده"
                     )
                     .setPriority(
                         NotificationCompat.PRIORITY_HIGH
                     )
-                    .setOngoing(true)
                     .setAutoCancel(true)
-                    .setContentIntent(openPendingIntent)
+                    .setOngoing(true)
+                    .setContentIntent(
+                        openPendingIntent
+                    )
                     .build()
 
             manager.notify(
@@ -83,17 +94,28 @@ class AlarmReceiver : BroadcastReceiver() {
             return
         }
 
-        val fullScreenIntent =
-            Intent(context, AlarmActivity::class.java).apply {
+        val alarmIntent =
+            Intent(
+                context,
+                AlarmActivity::class.java
+            ).apply {
+
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_CLEAR_TOP
                 )
 
-                putExtra("medicine", medicineName)
-                putExtra("medicine_id", medicineId)
+                putExtra(
+                    "medicine",
+                    medicineName
+                )
+
+                putExtra(
+                    "medicine_id",
+                    medicineId
+                )
             }
 
-        context.startActivity(fullScreenIntent)
+        context.startActivity(alarmIntent)
     }
 }
