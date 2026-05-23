@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -27,10 +28,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.test.alarm.scheduleMedicineAlarm
+import com.example.test.alarm.AlarmScheduler
 import com.example.test.data.local.AppDatabase
 import com.example.test.data.local.Medicine
-import com.example.test.ui.components.AddMedicineDialog
+import com.example.test.ui.components.AddMedicineBottomSheet
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.HeaderSection
 import com.example.test.ui.components.MedicineCard
@@ -42,17 +43,17 @@ fun HomeScreen(
     db: AppDatabase
 ) {
 
-    val dao = db.medicineDao()
-
     val context = LocalContext.current
 
+    val dao = db.medicineDao()
+
+    val scope = rememberCoroutineScope()
+
     var medicines by remember {
-        mutableStateOf(
-            listOf<Medicine>()
-        )
+        mutableStateOf<List<Medicine>>(emptyList())
     }
 
-    var showDialog by remember {
+    var showBottomSheet by remember {
         mutableStateOf(false)
     }
 
@@ -60,10 +61,7 @@ fun HomeScreen(
         mutableStateOf<Medicine?>(null)
     }
 
-    val scope = rememberCoroutineScope()
-
     LaunchedEffect(Unit) {
-
         medicines = dao.getAll()
     }
 
@@ -84,18 +82,18 @@ fun HomeScreen(
             .padding(horizontal = 20.dp)
     ) {
 
-        androidx.compose.foundation.layout.Column(
+        Column(
             modifier = Modifier.fillMaxSize()
         ) {
 
             Spacer(
-                modifier = Modifier.height(50.dp)
+                modifier = Modifier.height(48.dp)
             )
 
             HeaderSection()
 
             Spacer(
-                modifier = Modifier.height(28.dp)
+                modifier = Modifier.height(24.dp)
             )
 
             if (medicines.isEmpty()) {
@@ -107,17 +105,17 @@ fun HomeScreen(
             } else {
 
                 LazyColumn(
-
                     verticalArrangement =
-                        Arrangement.spacedBy(16.dp),
+                        Arrangement.spacedBy(14.dp),
 
                     contentPadding =
-                        PaddingValues(
-                            bottom = 120.dp
-                        )
+                        PaddingValues(bottom = 120.dp)
                 ) {
 
-                    items(medicines) { medicine ->
+                    items(
+                        medicines,
+                        key = { it.id }
+                    ) { medicine ->
 
                         MedicineCard(
 
@@ -125,26 +123,26 @@ fun HomeScreen(
 
                             fontFamily = Vazir,
 
-                            onEdit = {
-
-                                editingMedicine =
-                                    medicine
-
-                                showDialog = true
-                            },
-
                             onDelete = {
 
                                 scope.launch {
+
                                     AlarmScheduler.cancel(
-                                        context,
-                                        medicine.id
+                                        context = context,
+                                        medicineId = medicine.id
                                     )
+
                                     dao.delete(medicine)
 
                                     medicines =
                                         dao.getAll()
                                 }
+                            },
+
+                            onEdit = {
+
+                                editingMedicine = medicine
+                                showBottomSheet = true
                             }
                         )
                     }
@@ -157,7 +155,7 @@ fun HomeScreen(
             onClick = {
 
                 editingMedicine = null
-                showDialog = true
+                showBottomSheet = true
             },
 
             modifier = Modifier
@@ -167,9 +165,7 @@ fun HomeScreen(
                     bottom = 24.dp
                 ),
 
-            containerColor =
-                Color(0xFF22C55E),
-
+            containerColor = Color(0xFF22C55E),
             contentColor = Color.White
 
         ) {
@@ -181,54 +177,74 @@ fun HomeScreen(
         }
     }
 
-    if (showDialog) {
+    if (showBottomSheet) {
 
-        AddMedicineDialog(
+        AddMedicineBottomSheet(
 
             medicine = editingMedicine,
 
             onDismiss = {
 
-                showDialog = false
-                editingMedicine = null
+                showBottomSheet = false
             },
 
-            onAdd = { name, time ->
+            onSave = { name, time, hour, minute ->
 
                 scope.launch {
 
-                    if (editingMedicine == null) {
+                    try {
 
-                        val medicine =
-                            Medicine(
-                                name = name,
-                                time = time
+                        if (editingMedicine == null) {
+
+                            val insertedId =
+                                dao.insert(
+                                    Medicine(
+                                        name = name.trim(),
+                                        time = time.trim()
+                                    )
+                                ).toInt()
+
+                            AlarmScheduler.schedule(
+                                context = context,
+                                medicineId = insertedId,
+                                medicineName = name,
+                                hour = hour,
+                                minute = minute
                             )
 
-                        dao.insert(medicine)
+                        } else {
 
-                        scheduleMedicineAlarm(
-                            context = context,
-                            medicineName = name,
-                            time = time
-                        )
+                            val updatedMedicine =
+                                editingMedicine!!.copy(
+                                    name = name.trim(),
+                                    time = time.trim()
+                                )
 
-                    } else {
+                            dao.update(updatedMedicine)
 
-                        dao.update(
-
-                            editingMedicine!!.copy(
-                                name = name,
-                                time = time
+                            AlarmScheduler.cancel(
+                                context = context,
+                                medicineId = updatedMedicine.id
                             )
-                        )
+
+                            AlarmScheduler.schedule(
+                                context = context,
+                                medicineId = updatedMedicine.id,
+                                medicineName = updatedMedicine.name,
+                                hour = hour,
+                                minute = minute
+                            )
+                        }
+
+                        medicines = dao.getAll()
+
+                    } catch (e: Exception) {
+
+                        e.printStackTrace()
                     }
-
-                    medicines = dao.getAll()
-
-                    showDialog = false
-                    editingMedicine = null
                 }
+
+                showBottomSheet = false
             }
         )
     }
