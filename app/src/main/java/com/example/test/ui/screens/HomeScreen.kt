@@ -30,9 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 
 import com.example.test.data.local.AppDatabase
@@ -42,6 +42,7 @@ import com.example.test.ui.components.AddMedicineDialog
 import com.example.test.ui.components.EmptyState
 import com.example.test.ui.components.HeaderSection
 import com.example.test.ui.components.MedicineCard
+import com.example.test.ui.theme.Vazir
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,30 +75,22 @@ fun HomeScreen() {
     }
 
     Scaffold(
-
         floatingActionButton = {
-
             FloatingActionButton(
-
                 onClick = {
-
                     editingMedicine = null
                     showDialog = true
                 }
-
             ) {
-
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null
                 )
             }
         }
-
     ) { padding ->
 
         Box(
-
             modifier = Modifier
                 .fillMaxSize()
                 .background(
@@ -110,26 +103,19 @@ fun HomeScreen() {
                     )
                 )
                 .padding(padding)
-
         ) {
 
             LazyColumn(
-
                 modifier = Modifier.fillMaxSize(),
-
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-
                 contentPadding = PaddingValues(16.dp)
-
             ) {
 
                 item {
-
                     HeaderSection()
                 }
 
                 item {
-
                     Spacer(
                         modifier = Modifier.height(8.dp)
                     )
@@ -138,7 +124,6 @@ fun HomeScreen() {
                 if (medicines.isEmpty()) {
 
                     item {
-
                         EmptyState()
                     }
 
@@ -147,17 +132,13 @@ fun HomeScreen() {
                     items(medicines) { medicine ->
 
                         MedicineCard(
-
                             medicine = medicine,
-
+                            fontFamily = Vazir,
                             onEdit = {
-
                                 editingMedicine = medicine
                                 showDialog = true
                             },
-
                             onDelete = {
-
                                 deleteMedicine = medicine
                             }
                         )
@@ -165,7 +146,6 @@ fun HomeScreen() {
                 }
 
                 item {
-
                     Spacer(
                         modifier = Modifier.height(100.dp)
                     )
@@ -175,15 +155,11 @@ fun HomeScreen() {
             if (showDialog) {
 
                 AddMedicineDialog(
-
                     medicine = editingMedicine,
-
                     onDismiss = {
-
                         showDialog = false
                         editingMedicine = null
                     },
-
                     onAdd = { name, time ->
 
                         scope.launch {
@@ -195,14 +171,11 @@ fun HomeScreen() {
                                     time = time
                                 )
 
-                                val id =
-                                    dao.insert(medicine)
+                                val id = dao.insert(medicine)
 
                                 AlarmScheduler.scheduleAlarm(
                                     context,
-                                    medicine.copy(
-                                        id = id.toInt()
-                                    )
+                                    medicine.copy(id = id.toInt())
                                 )
 
                             } else {
@@ -236,23 +209,17 @@ fun HomeScreen() {
             deleteMedicine?.let { medicine ->
 
                 AlertDialog(
-
                     onDismissRequest = {
                         deleteMedicine = null
                     },
-
                     title = {
-                        Text("حذف دارو")
+                        Text(text = "حذف دارو")
                     },
-
                     text = {
-                        Text("آیا مطمئن هستید؟")
+                        Text(text = "آیا مطمئن هستید؟")
                     },
-
                     confirmButton = {
-
                         Button(
-
                             onClick = {
 
                                 scope.launch {
@@ -267,27 +234,20 @@ fun HomeScreen() {
                                     deleteMedicine = null
                                 }
                             }
-
                         ) {
-
                             Text(
                                 text = "حذف",
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     },
-
                     dismissButton = {
-
                         TextButton(
-
                             onClick = {
                                 deleteMedicine = null
                             }
-
                         ) {
-
-                            Text("لغو")
+                            Text(text = "لغو")
                         }
                     }
                 )
