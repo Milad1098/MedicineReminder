@@ -37,6 +37,7 @@ class AlarmReceiver : BroadcastReceiver() {
         if (regular) AlarmScheduler.schedule(context, m, time, scheduledAt)
         if (dao.logFor(doseTimeId, scheduledAt) != null) return
         Notifications.showAlarm(context, m, time, scheduledAt, attempt)
+        AlarmActivity.newAlarm.tryEmit(Unit)
         if (attempt < MAX_FOLLOW_UPS) AlarmScheduler.followUp(
             context, doseTimeId, scheduledAt, System.currentTimeMillis() + 15 * 60_000, attempt + 1
         )

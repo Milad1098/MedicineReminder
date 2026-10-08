@@ -31,7 +31,7 @@ import ir.milad.medicinereminder.domain.dosesOn
 import ir.milad.medicinereminder.domain.toLocalDateTime
 import ir.milad.medicinereminder.ui.components.Group
 import ir.milad.medicinereminder.ui.components.GroupRow
-import ir.milad.medicinereminder.ui.components.PillIcon
+import ir.milad.medicinereminder.ui.components.MedIcon
 import ir.milad.medicinereminder.ui.components.RowDivider
 import ir.milad.medicinereminder.ui.components.ScreenTitle
 import ir.milad.medicinereminder.ui.components.SectionHeader
@@ -54,8 +54,8 @@ fun HistoryScreen(meds: List<MedicineWithTimes>, logs: List<DoseLog>, padding: P
     val weekTaken = week.sumOf { (_, d) -> d.count { it.state == DoseState.TAKEN } }
 
     LazyColumn(
-        Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(),
+        Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp,
             bottom = padding.calculateBottomPadding() + 24.dp),
     ) {
         item { ScreenTitle("تاریخچه") }
@@ -64,10 +64,10 @@ fun HistoryScreen(meds: List<MedicineWithTimes>, logs: List<DoseLog>, padding: P
                 Column(Modifier.padding(20.dp)) {
                     Text("پایبندی ۷ روز اخیر", color = colors.textSecondary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     Text(
-                        if (weekDue == 0) "—" else "٪${(weekTaken * 100 / weekDue).fa()}",
+                        if (weekDue == 0) "—" else "${(weekTaken * 100 / weekDue).fa()}٪",
                         color = colors.text, fontSize = 34.sp, fontWeight = FontWeight.Bold,
                     )
-                    Row(Modifier.fillMaxWidth().height(110.dp).padding(top = 12.dp),
+                    Row(Modifier.fillMaxWidth().height(96.dp).padding(top = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween) {
                         week.forEach { (date, doses) ->
                             val ratio = if (doses.isEmpty()) 0f else doses.count { it.state == DoseState.TAKEN } / doses.size.toFloat()
@@ -93,7 +93,7 @@ fun HistoryScreen(meds: List<MedicineWithTimes>, logs: List<DoseLog>, padding: P
                     doses.forEachIndexed { i, d ->
                         if (i > 0) RowDivider(72.dp)
                         GroupRow {
-                            PillIcon(d.medicine.form, d.medicine.color, 40.dp)
+                            MedIcon(d.medicine.form, d.medicine.color, 40.dp)
                             Column(Modifier.weight(1f)) {
                                 Text(d.medicine.name, color = colors.text, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 Text("نوبت ${timeText(d.time.minuteOfDay)}", color = colors.textSecondary, fontSize = 13.sp)

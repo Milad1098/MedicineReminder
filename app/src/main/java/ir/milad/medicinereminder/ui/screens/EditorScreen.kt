@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,8 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -66,7 +65,9 @@ import ir.milad.medicinereminder.ui.amountNumber
 import ir.milad.medicinereminder.ui.components.Chip
 import ir.milad.medicinereminder.ui.components.Group
 import ir.milad.medicinereminder.ui.components.GroupRow
-import ir.milad.medicinereminder.ui.components.PillIcon
+import ir.milad.medicinereminder.ui.components.MedIcon
+import ir.milad.medicinereminder.ui.components.Stepper
+import ir.milad.medicinereminder.ui.components.Wheel
 import ir.milad.medicinereminder.ui.components.RowDivider
 import ir.milad.medicinereminder.ui.components.SectionHeader
 import ir.milad.medicinereminder.ui.components.medicineColors
@@ -137,12 +138,21 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
 
         Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 40.dp)) {
             // Preview + name
-            Column(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                PillIcon(m.form, m.color, 88.dp)
+            Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                MedIcon(m.form, m.color, 104.dp)
             }
-            Group {
-                PlainField(m.name, { m = m.copy(name = it) }, "نام دارو (مثلاً آموکسی‌سیلین)")
-            }
+            TextField(
+                m.name, { m = m.copy(name = it) }, Modifier.fillMaxWidth(),
+                placeholder = { Text("نام دارو", Modifier.fillMaxWidth(), color = colors.textSecondary, fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center) },
+                singleLine = true,
+                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 26.sp, fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = colors.text),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent, cursorColor = colors.accent,
+                ),
+            )
 
             SectionHeader("شکل و رنگ")
             Group {
@@ -184,13 +194,13 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
                     }
                     Frequency.EVERY_N_DAYS -> {
                         RowDivider()
-                        StepperRow("هر چند روز", m.intervalDays.toFloat(), 1f, 2f) { m = m.copy(intervalDays = it.toInt()) }
+                        StepperRow("هر چند روز", m.intervalDays.toFloat(), 2f) { m = m.copy(intervalDays = it.toInt()) }
                     }
                     Frequency.CYCLE -> {
                         RowDivider()
-                        StepperRow("روزهای مصرف", m.cycleOn.toFloat(), 1f, 1f) { m = m.copy(cycleOn = it.toInt()) }
+                        StepperRow("روزهای مصرف", m.cycleOn.toFloat(), 1f) { m = m.copy(cycleOn = it.toInt()) }
                         RowDivider()
-                        StepperRow("روزهای استراحت", m.cycleOff.toFloat(), 1f, 1f) { m = m.copy(cycleOff = it.toInt()) }
+                        StepperRow("روزهای استراحت", m.cycleOff.toFloat(), 1f) { m = m.copy(cycleOff = it.toInt()) }
                     }
                     else -> {}
                 }
@@ -200,7 +210,7 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
                 SectionHeader("مقدار هر بار مصرف")
                 Group {
                     val t = times.firstOrNull() ?: DoseTime(minuteOfDay = 0)
-                    StepperRow(unit(m.form), t.amount, 0.5f, 0.5f, amount = true) {
+                    StepperRow(unit(m.form), t.amount, 0.5f, amount = true) {
                         if (times.isEmpty()) times.add(t.copy(amount = it)) else times[0] = t.copy(amount = it)
                     }
                 }
@@ -217,7 +227,7 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
                                 .background(colors.fill).clickable { pickTime = i }.padding(horizontal = 12.dp, vertical = 6.dp),
                                 color = colors.text, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             Box(Modifier.weight(1f))
-                            Stepper(t.amount, 0.5f, 0.5f, amount = true) { times[i] = t.copy(amount = it) }
+                            Stepper(t.amount, { times[i] = t.copy(amount = it) })
                             Text(unit(m.form), color = colors.textSecondary, fontSize = 13.sp)
                         }
                     }
@@ -271,7 +281,7 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
                 SwitchRow("نامحدود (داروی دائمی)", durationDays == null) { durationDays = if (it) null else 10 }
                 durationDays?.let { d ->
                     RowDivider()
-                    StepperRow("تعداد روز", d.toFloat(), 1f, 1f) { durationDays = it.toInt() }
+                    StepperRow("تعداد روز", d.toFloat(), 1f) { durationDays = it.toInt() }
                 }
             }
 
@@ -299,7 +309,7 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
         }
     }
 
-    pickTime?.let { i -> TimeDialog(times[i].minuteOfDay, { pickTime = null }) { times[i] = times[i].copy(minuteOfDay = it); pickTime = null } }
+    pickTime?.let { i -> TimeSheet(times[i].minuteOfDay, { pickTime = null }) { times[i] = times[i].copy(minuteOfDay = it); pickTime = null } }
 
     if (confirmDelete) AlertDialog(
         onDismissRequest = { confirmDelete = false },
@@ -333,41 +343,40 @@ private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
 }
 
 @Composable
-private fun StepperRow(label: String, value: Float, step: Float, min: Float, amount: Boolean = false, onChange: (Float) -> Unit) =
+private fun StepperRow(label: String, value: Float, min: Float, amount: Boolean = false, onChange: (Float) -> Unit) =
     GroupRow {
         Text(label, Modifier.weight(1f), color = colors.text)
-        Stepper(value, step, min, amount, onChange)
+        Stepper(value, onChange, min, integer = !amount)
     }
 
 @Composable
 private fun NumberRow(label: String, value: Float, onChange: (Float) -> Unit) = GroupRow {
     Text(label, Modifier.weight(1f), color = colors.text)
-    Stepper(value, 1f, 0f, amount = true, onChange)
+    Stepper(value, onChange, 0f, integer = true)
 }
 
-@Composable
-private fun Stepper(value: Float, step: Float, min: Float, amount: Boolean = false, onChange: (Float) -> Unit) =
-    Row(Modifier.clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)).background(colors.fill),
-        verticalAlignment = Alignment.CenterVertically) {
-        Text("−", Modifier.clickable { onChange((value - step).coerceAtLeast(min)) }.padding(horizontal = 14.dp, vertical = 4.dp),
-            color = colors.text, fontSize = 20.sp)
-        Text(if (amount) amountNumber(value) else value.toInt().fa(), color = colors.text, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        Text("+", Modifier.clickable { onChange(value + step) }.padding(horizontal = 14.dp, vertical = 4.dp),
-            color = colors.text, fontSize = 20.sp)
-    }
-
+/** iOS-style hour/minute wheels in a bottom sheet. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TimeDialog(minuteOfDay: Int, onDismiss: () -> Unit, onPick: (Int) -> Unit) {
-    val state = rememberTimePickerState(minuteOfDay / 60, minuteOfDay % 60, is24Hour = true)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onPick(state.hour * 60 + state.minute) }) {
-                Icon(Icons.Rounded.Check, null, tint = colors.accent); Text("تأیید", color = colors.accent)
+private fun TimeSheet(minuteOfDay: Int, onDismiss: () -> Unit, onPick: (Int) -> Unit) {
+    var h by remember { mutableStateOf(minuteOfDay / 60) }
+    var mIdx by remember { mutableStateOf((minuteOfDay % 60) / 5) }
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = colors.surface) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("ساعت مصرف", color = colors.text, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(Modifier.padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Wheel((0..23).map { "%02d".format(it).fa() }, h, { h = it })
+                    Text(":", color = colors.text, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                    Wheel((0..55 step 5).map { "%02d".format(it).fa() }, mIdx, { mIdx = it })
+                }
             }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("انصراف") } },
-        text = { CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) { TimePicker(state) } },
-    )
+            Box(
+                Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).background(colors.accent)
+                    .clickable { onPick(h * 60 + mIdx * 5) }.padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) { Text("تأیید ${timeText(h * 60 + mIdx * 5)}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+        }
+    }
 }

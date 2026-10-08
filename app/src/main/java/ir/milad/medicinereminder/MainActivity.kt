@@ -1,6 +1,21 @@
 package ir.milad.medicinereminder
 
 import android.os.Bundle
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateColorAsState
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -20,9 +35,6 @@ import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Medication
 import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -82,21 +94,7 @@ private fun App() {
     Box(Modifier.fillMaxSize().background(colors.background)) {
         Scaffold(
             containerColor = colors.background,
-            bottomBar = {
-                NavigationBar(containerColor = colors.surface) {
-                    tabs.forEach { (label, icon, i) ->
-                        NavigationBarItem(
-                            selected = tab == i, onClick = { tab = i },
-                            icon = { Icon(icon, null) }, label = { Text(label) },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = colors.accent, selectedTextColor = colors.accent,
-                                indicatorColor = colors.accent.copy(alpha = 0.12f),
-                                unselectedIconColor = colors.textSecondary, unselectedTextColor = colors.textSecondary,
-                            ),
-                        )
-                    }
-                }
-            },
+            bottomBar = { FloatingNav(tab) { tab = it } },
         ) { padding ->
             AnimatedContent(tab, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "tab") { t ->
                 when (t) {
@@ -115,6 +113,31 @@ private fun App() {
             // Keep last id while the exit animation runs
             val id = remember { editing ?: 0 }
             EditorScreen(id, onClose = { editing = null })
+        }
+    }
+}
+
+/** Telegram-style floating pill nav. */
+@Composable
+private fun FloatingNav(tab: Int, onSelect: (Int) -> Unit) = Box(
+    Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 40.dp, vertical = 10.dp),
+    contentAlignment = Alignment.Center,
+) {
+    Row(
+        Modifier.fillMaxWidth().shadow(18.dp, RoundedCornerShape(32.dp), spotColor = Color.Black.copy(alpha = 0.25f))
+            .clip(RoundedCornerShape(32.dp)).background(colors.surface).padding(6.dp),
+    ) {
+        tabs.forEach { (label, icon, i) ->
+            val on = tab == i
+            val bg by animateColorAsState(if (on) colors.accent.copy(alpha = 0.14f) else Color.Transparent, label = "nav")
+            Column(
+                Modifier.weight(1f).clip(RoundedCornerShape(26.dp)).background(bg).clickable { onSelect(i) }.padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(icon, null, tint = if (on) colors.accent else colors.textSecondary)
+                Text(label, color = if (on) colors.accent else colors.textSecondary, fontSize = 12.sp,
+                    fontWeight = if (on) FontWeight.Bold else FontWeight.Normal)
+            }
         }
     }
 }

@@ -41,7 +41,8 @@ interface MedDao {
     @Query("DELETE FROM medicines WHERE id = :id") suspend fun delete(id: Long)
 
     @Insert suspend fun insertTimes(t: List<DoseTime>)
-    @Query("DELETE FROM dose_times WHERE medicineId = :medicineId") suspend fun deleteTimes(medicineId: Long)
+    @Update suspend fun updateTimes(t: List<DoseTime>)
+    @Query("DELETE FROM dose_times WHERE id IN (:ids)") suspend fun deleteTimes(ids: List<Long>)
 
     @Query("UPDATE medicines SET stock = stock + :delta WHERE id = :id AND stock IS NOT NULL")
     suspend fun adjustStock(id: Long, delta: Float)

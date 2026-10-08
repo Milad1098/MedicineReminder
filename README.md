@@ -6,6 +6,17 @@ An open-source Android medication reminder (Persian / RTL), built with Kotlin an
 
 [![Android CI](https://github.com/Milad1098/MedicineReminder/actions/workflows/android.yml/badge.svg)](https://github.com/Milad1098/MedicineReminder/actions/workflows/android.yml)
 
+<p align="center">
+  <img src="docs/screenshots/today.png" width="200">
+  <img src="docs/screenshots/medicines.png" width="200">
+  <img src="docs/screenshots/editor.png" width="200">
+</p>
+<p align="center">
+  <img src="docs/screenshots/alarm.png" width="200">
+  <img src="docs/screenshots/history.png" width="200">
+  <img src="docs/screenshots/dark.png" width="200">
+</p>
+
 ## امکانات
 
 - **هر نوع نسخه‌ای**: هر روز، روزهای خاص هفته (مثلاً «۲ عدد، فقط شنبه‌ها»)، هر چند روز، دوره‌ای (۲۱ روز مصرف / ۷ روز استراحت)، در صورت نیاز
@@ -13,7 +24,8 @@ An open-source Android medication reminder (Persian / RTL), built with Kotlin an
 - **مدت درمان**: مثلاً آنتی‌بیوتیک ۱۰ روزه؛ بعد از آن دارو به آرشیو می‌رود
 - **آلارمی که جا نمی‌اندازد**: روی صفحه‌ی قفل، دکمه‌های «خوردم / ۱۰ دقیقه بعد / رد کردن» روی خود نوتیف، و اگر جواب ندهی دوباره یادآوری می‌کند
 - **موجودی قرص**: با هر مصرف کم می‌شود و وقت تمدید نسخه خبرت می‌کند
-- **صفحه‌ی امروز**: حلقه‌ی پیشرفت روز و وعده‌ها به ترتیب ساعت؛ با یک لمس ثبت کن
+- **صفحه‌ی امروز**: نوار هفته، حلقه‌ی پیشرفت روز، شمارش معکوس تا نوبت بعدی و وعده‌ها به ترتیب ساعت؛ با یک لمس ثبت کن
+- **چند دارو هم‌زمان**: اگر دو دارو یک ساعت باشند، صفحه‌ی آلارم هر دو را با هم نشان می‌دهد («همه رو خوردم»)
 - **تاریخچه**: درصد پایبندی ۷ روز اخیر و سابقه‌ی هر وعده (خورده شد / رد شد / جا افتاد)
 - **شناخت دارو از ظاهر**: شکل (قرص، کپسول، شربت، قطره، اسپری، آمپول) و رنگ دلخواه
 - تم روشن و تیره، فونت وزیرمتن، تاریخ شمسی
