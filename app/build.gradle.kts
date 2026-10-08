@@ -18,13 +18,24 @@ android {
         versionName = "2.0.0"
     }
 
+    // CI signs with the real key from GitHub Secrets (see .github/workflows/android.yml);
+    // locally, without those env vars, release falls back to the debug key.
+    val keystore = System.getenv("RELEASE_KEYSTORE")
+    signingConfigs {
+        if (keystore != null) create("release") {
+            storeFile = file(keystore)
+            storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+            keyPassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            // ponytail: release signed with debug key so CI can publish an installable APK; add a real keystore before Play Store
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
