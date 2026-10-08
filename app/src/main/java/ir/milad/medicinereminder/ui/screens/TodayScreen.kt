@@ -81,6 +81,7 @@ import ir.milad.medicinereminder.ui.components.CheckCircle
 import ir.milad.medicinereminder.ui.components.Group
 import ir.milad.medicinereminder.ui.components.GroupRow
 import ir.milad.medicinereminder.ui.components.MedIcon
+import ir.milad.medicinereminder.ui.components.glass
 import ir.milad.medicinereminder.ui.components.RowDivider
 import ir.milad.medicinereminder.ui.components.ScreenTitle
 import ir.milad.medicinereminder.ui.components.SectionHeader
@@ -120,8 +121,8 @@ fun TodayScreen(meds: List<MedicineWithTimes>, logs: List<DoseLog>, onAdd: () ->
     val next = remember(meds, now) { nextDose(active, now) }
 
     LazyColumn(
-        Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp,
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(),
             bottom = padding.calculateBottomPadding() + 24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -215,7 +216,7 @@ private fun relative(at: LocalDateTime, now: LocalDateTime): String {
 
 @Composable
 private fun Card(onClick: (() -> Unit)? = null, content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) = Row(
-    Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(colors.surface)
+    Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp))
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
         .padding(14.dp),
     verticalAlignment = Alignment.CenterVertically,
@@ -227,7 +228,7 @@ private fun Card(onClick: (() -> Unit)? = null, content: @Composable androidx.co
 @Composable
 private fun WeekStrip(today: LocalDate, selected: LocalDate, meds: List<MedicineWithTimes>, logs: List<DoseLog>, now: Long, onSelect: (LocalDate) -> Unit) {
     val saturday = today.minusDays(((today.dayOfWeek.value - DayOfWeek.SATURDAY.value + 7) % 7).toLong())
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         (0L..6L).map { saturday.plusDays(it) }.forEach { date ->
             val doses = dosesOn(date, meds, logs, now)
             val ratio = if (doses.isEmpty()) 0f else doses.count { it.state == DoseState.TAKEN } / doses.size.toFloat()
@@ -236,7 +237,7 @@ private fun WeekStrip(today: LocalDate, selected: LocalDate, meds: List<Medicine
             val track = if (isSel) Color.White.copy(alpha = 0.35f) else colors.separator
             Column(
                 Modifier.clip(RoundedCornerShape(16.dp)).background(if (isSel) colors.accent else Color.Transparent)
-                    .clickable { onSelect(date) }.padding(vertical = 8.dp).width(44.dp),
+                    .clickable { onSelect(date) }.padding(vertical = 8.dp).width(42.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(dayShort(date.dayOfWeek), color = if (isSel) Color.White else colors.textSecondary, fontSize = 12.sp)
@@ -303,7 +304,7 @@ private fun DoseCard(d: Dose, canAct: Boolean, onTake: () -> Unit, onSkip: () ->
     val done = d.state == DoseState.TAKEN || d.state == DoseState.SKIPPED
     Box {
         Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(colors.surface)
+            Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp))
                 .clickable(enabled = canAct) { menu = true }.padding(14.dp).animateContentSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),

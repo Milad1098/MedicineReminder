@@ -1,11 +1,29 @@
 package ir.milad.medicinereminder
 
 import android.os.Bundle
+import ir.milad.medicinereminder.ui.components.liquidBar
+import ir.milad.medicinereminder.ui.components.glass
+import ir.milad.medicinereminder.ui.components.MeshBackground
+import ir.milad.medicinereminder.ui.components.LocalHaze
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.HazeState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,7 +101,9 @@ private val tabs = listOf(
 private fun App() {
     val context = LocalContext.current
     val dao = remember { Repo.dao(context) }
-    val meds by dao.observeAll().collectAsState(emptyList())
+    // null until Room answers: avoids flashing the empty state on launch
+    val loaded by remember { dao.observeAll() }.collectAsState(null)
+    val meds = loaded.orEmpty()
     val from = remember { LocalDate.now().minusDays(HISTORY_DAYS).atStartOfDay().toMillis() }
     val logs by remember { dao.observeLogs(from, Long.MAX_VALUE) }.collectAsState(emptyList())
 
@@ -91,19 +111,31 @@ private fun App() {
     var editing by rememberSaveable { mutableStateOf<Long?>(null) }
     BackHandler(editing != null) { editing = null }
 
+    val haze = remember { HazeState() }
     Box(Modifier.fillMaxSize().background(colors.background)) {
         Scaffold(
-            containerColor = colors.background,
-            bottomBar = { FloatingNav(tab) { tab = it } },
+            containerColor = Color.Transparent,
+            bottomBar = { FloatingNav(tab, haze) { tab = it } },
         ) { padding ->
-            AnimatedContent(tab, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "tab") { t ->
-                when (t) {
-                    0 -> TodayScreen(meds, logs, onAdd = { editing = 0 }, padding)
-                    1 -> MedicinesScreen(meds, onOpen = { editing = it }, padding)
-                    else -> HistoryScreen(meds, logs, padding)
+            // Everything in here is the "content layer" the glass bars blur.
+            Box(Modifier.fillMaxSize().hazeSource(haze)) {
+                MeshBackground()
+                CompositionLocalProvider(LocalHaze provides haze) {
+                    if (loaded != null) AnimatedContent(tab, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "tab") { t ->
+                        when (t) {
+                            0 -> TodayScreen(meds, logs, onAdd = { editing = 0 }, padding)
+                            1 -> MedicinesScreen(meds, onOpen = { editing = it }, padding)
+                            else -> HistoryScreen(meds, logs, padding)
+                        }
+                    }
                 }
             }
         }
+        // Glass status bar: content scrolls under it blurred, like iOS.
+        val c = colors
+        Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).hazeEffect(haze) {
+            blurRadius = 20.dp; backgroundColor = c.background; tints = listOf(HazeTint(c.barTint))
+        })
 
         AnimatedVisibility(
             editing != null,
@@ -117,26 +149,30 @@ private fun App() {
     }
 }
 
-/** Telegram-style floating pill nav. */
+/** Liquid Glass floating tab bar with a sliding glass "droplet" under the selected tab. */
 @Composable
-private fun FloatingNav(tab: Int, onSelect: (Int) -> Unit) = Box(
-    Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 40.dp, vertical = 10.dp),
+private fun FloatingNav(tab: Int, haze: HazeState, onSelect: (Int) -> Unit) = Box(
+    Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 36.dp, vertical = 10.dp),
     contentAlignment = Alignment.Center,
 ) {
-    Row(
-        Modifier.fillMaxWidth().shadow(18.dp, RoundedCornerShape(32.dp), spotColor = Color.Black.copy(alpha = 0.25f))
-            .clip(RoundedCornerShape(32.dp)).background(colors.surface).padding(6.dp),
-    ) {
-        tabs.forEach { (label, icon, i) ->
-            val on = tab == i
-            val bg by animateColorAsState(if (on) colors.accent.copy(alpha = 0.14f) else Color.Transparent, label = "nav")
-            Column(
-                Modifier.weight(1f).clip(RoundedCornerShape(26.dp)).background(bg).clickable { onSelect(i) }.padding(vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(icon, null, tint = if (on) colors.accent else colors.textSecondary)
-                Text(label, color = if (on) colors.accent else colors.textSecondary, fontSize = 12.sp,
-                    fontWeight = if (on) FontWeight.Bold else FontWeight.Normal)
+    BoxWithConstraints(Modifier.fillMaxWidth().liquidBar(RoundedCornerShape(34.dp), haze).padding(6.dp)) {
+        val itemW = maxWidth / tabs.size
+        val x by animateDpAsState(itemW * tab, spring(dampingRatio = 0.72f, stiffness = 380f), label = "drop")
+        Box(
+            Modifier.offset(x = x).width(itemW).height(58.dp)
+                .glass(RoundedCornerShape(28.dp), elevation = 0.dp, fill = colors.accent.copy(alpha = 0.16f)),
+        )
+        Row(Modifier.fillMaxWidth()) {
+            tabs.forEach { (label, icon, i) ->
+                val on = tab == i
+                val tint by animateColorAsState(if (on) colors.accent else colors.textSecondary, label = "navc")
+                Column(
+                    Modifier.weight(1f).height(58.dp).clip(RoundedCornerShape(28.dp)).clickable { onSelect(i) },
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                ) {
+                    Icon(icon, null, tint = tint)
+                    Text(label, color = tint, fontSize = 12.sp, fontWeight = if (on) FontWeight.Bold else FontWeight.Normal)
+                }
             }
         }
     }

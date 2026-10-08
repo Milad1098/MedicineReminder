@@ -54,8 +54,8 @@ fun HistoryScreen(meds: List<MedicineWithTimes>, logs: List<DoseLog>, padding: P
     val weekTaken = week.sumOf { (_, d) -> d.count { it.state == DoseState.TAKEN } }
 
     LazyColumn(
-        Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp,
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(),
             bottom = padding.calculateBottomPadding() + 24.dp),
     ) {
         item { ScreenTitle("تاریخچه") }

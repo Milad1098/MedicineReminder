@@ -24,17 +24,30 @@ import ir.milad.medicinereminder.R
 data class AppColors(
     val background: Color, val surface: Color, val text: Color, val textSecondary: Color,
     val separator: Color, val accent: Color, val warning: Color, val danger: Color, val fill: Color,
+    /** Liquid Glass: translucent card fill, light-catching top edge, faint bottom edge, bar tint */
+    val glass: Color, val glassEdgeTop: Color, val glassEdgeBottom: Color, val barTint: Color,
+    /** soft color blobs behind everything, so the glass has something to refract */
+    val mesh: List<Color>,
+    val dark: Boolean,
 )
 
 private val Light = AppColors(
-    background = Color(0xFFF2F2F7), surface = Color.White, text = Color.Black,
-    textSecondary = Color(0xFF8E8E93), separator = Color(0xFFE5E5EA), accent = Color(0xFF10B981),
-    warning = Color(0xFFF59E0B), danger = Color(0xFFEF4444), fill = Color(0xFFE9E9EE),
+    background = Color(0xFFEEF2F7), surface = Color.White, text = Color(0xFF0B1220),
+    textSecondary = Color(0xFF6B7280), separator = Color(0x1F0B1220), accent = Color(0xFF0FA968),
+    warning = Color(0xFFE08A00), danger = Color(0xFFE5484D), fill = Color(0x140B1220),
+    glass = Color.White.copy(alpha = 0.62f), glassEdgeTop = Color.White.copy(alpha = 0.95f),
+    glassEdgeBottom = Color.White.copy(alpha = 0.25f), barTint = Color.White.copy(alpha = 0.55f),
+    mesh = listOf(Color(0xFF6EE7B7), Color(0xFF7DD3FC), Color(0xFFC4B5FD), Color(0xFFFDBA74)),
+    dark = false,
 )
 private val Dark = AppColors(
-    background = Color.Black, surface = Color(0xFF1C1C1E), text = Color.White,
-    textSecondary = Color(0xFF8E8E93), separator = Color(0xFF38383A), accent = Color(0xFF34D399),
-    warning = Color(0xFFFBBF24), danger = Color(0xFFF87171), fill = Color(0xFF2C2C2E),
+    background = Color(0xFF05080D), surface = Color(0xFF151A22), text = Color(0xFFF5F7FA),
+    textSecondary = Color(0xFF9AA3AF), separator = Color(0x1FFFFFFF), accent = Color(0xFF34D399),
+    warning = Color(0xFFFBBF24), danger = Color(0xFFFF6B6B), fill = Color(0x1AFFFFFF),
+    glass = Color.White.copy(alpha = 0.07f), glassEdgeTop = Color.White.copy(alpha = 0.28f),
+    glassEdgeBottom = Color.White.copy(alpha = 0.04f), barTint = Color(0xFF10151C).copy(alpha = 0.55f),
+    mesh = listOf(Color(0xFF065F46), Color(0xFF1E3A8A), Color(0xFF4C1D95), Color(0xFF0E7490)),
+    dark = true,
 )
 
 val LocalColors = staticCompositionLocalOf { Light }

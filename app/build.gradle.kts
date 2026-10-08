@@ -56,5 +56,8 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    // Backdrop blur for Liquid Glass bars (Compose has no built-in backdrop blur). 1.5.x = Compose 1.7
+    implementation("dev.chrisbanes.haze:haze:1.5.4")
+
     testImplementation("junit:junit:4.13.2")
 }

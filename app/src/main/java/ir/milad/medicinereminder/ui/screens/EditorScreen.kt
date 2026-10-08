@@ -66,6 +66,10 @@ import ir.milad.medicinereminder.ui.components.Chip
 import ir.milad.medicinereminder.ui.components.Group
 import ir.milad.medicinereminder.ui.components.GroupRow
 import ir.milad.medicinereminder.ui.components.MedIcon
+import ir.milad.medicinereminder.ui.components.MeshBackground
+import ir.milad.medicinereminder.ui.components.liquidBar
+import dev.chrisbanes.haze.hazeSource
+import androidx.compose.foundation.shape.RoundedCornerShape
 import ir.milad.medicinereminder.ui.components.Stepper
 import ir.milad.medicinereminder.ui.components.Wheel
 import ir.milad.medicinereminder.ui.components.RowDivider
@@ -126,8 +130,12 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
         onClose()
     }
 
-    Column(Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    val haze = remember { dev.chrisbanes.haze.HazeState() }
+    Box(Modifier.fillMaxSize()) {
+    MeshBackground(Modifier.hazeSource(haze))
+    Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp).fillMaxWidth().liquidBar(RoundedCornerShape(26.dp), haze)
+            .padding(horizontal = 4.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = onClose) { Text("انصراف", color = colors.accent, fontSize = 16.sp) }
             Text(if (id == 0L) "داروی جدید" else "ویرایش دارو", Modifier.weight(1f), color = colors.text,
                 fontWeight = FontWeight.Bold, fontSize = 17.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
@@ -136,7 +144,7 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
             }
         }
 
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 40.dp)) {
+        Column(Modifier.hazeSource(haze).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 40.dp)) {
             // Preview + name
             Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 MedIcon(m.form, m.color, 104.dp)
@@ -309,6 +317,7 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
         }
     }
 
+    }
     pickTime?.let { i -> TimeSheet(times[i].minuteOfDay, { pickTime = null }) { times[i] = times[i].copy(minuteOfDay = it); pickTime = null } }
 
     if (confirmDelete) AlertDialog(

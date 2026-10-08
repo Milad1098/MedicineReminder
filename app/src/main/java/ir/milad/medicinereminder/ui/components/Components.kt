@@ -135,7 +135,7 @@ fun SectionHeader(text: String, modifier: Modifier = Modifier, trailing: String?
 /** iOS inset grouped list; separate rows with [RowDivider]. */
 @Composable
 fun Group(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) = Column(
-    modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(colors.surface), content = content,
+    modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)), content = content,
 )
 
 @Composable

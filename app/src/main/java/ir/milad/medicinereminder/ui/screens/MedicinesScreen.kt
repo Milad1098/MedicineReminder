@@ -44,8 +44,8 @@ import ir.milad.medicinereminder.ui.theme.colors
 fun MedicinesScreen(meds: List<MedicineWithTimes>, onOpen: (Long) -> Unit, padding: PaddingValues) {
     val (archived, active) = meds.partition { it.medicine.archived }
     LazyColumn(
-        Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp,
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(),
             bottom = padding.calculateBottomPadding() + 24.dp),
     ) {
         item {

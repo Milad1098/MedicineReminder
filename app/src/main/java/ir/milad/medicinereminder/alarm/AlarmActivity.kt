@@ -15,6 +15,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -170,7 +171,8 @@ private fun DoseRow(d: Dose, onTake: () -> Unit) {
     var visible by remember { mutableStateOf(true) }
     AnimatedVisibility(visible, exit = shrinkVertically() + fadeOut()) {
         Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Color.White.copy(alpha = 0.16f)).padding(14.dp),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Color.White.copy(alpha = 0.14f))
+                .border(androidx.compose.foundation.BorderStroke(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.6f), Color.White.copy(alpha = 0.08f)))), RoundedCornerShape(24.dp)).padding(14.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             MedIcon(d.medicine.form, d.medicine.color, 52.dp)
@@ -197,7 +199,8 @@ private fun ColumnScope.Buttons(takeLabel: String, onAll: (String) -> Unit) {
         listOf("۱۰ دقیقه بعد" to AlarmReceiver.ACTION_SNOOZE, "رد کردن" to AlarmReceiver.ACTION_SKIP).forEach { (label, action) ->
             Button(
                 onClick = { onAll(action) }, modifier = Modifier.weight(1f).height(56.dp), shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.18f)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.14f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.6f), Color.White.copy(alpha = 0.08f)))),
             ) { Text(label, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
         }
     }
