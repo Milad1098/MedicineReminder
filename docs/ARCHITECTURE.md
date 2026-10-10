@@ -17,9 +17,12 @@ domain/    Schedule.kt  (Kotlin خالص — بدون وابستگی اندرو�
 
 | مسیر | مسئولیت |
 |---|---|
+| `domain/Day.kt` | وعده‌های یک روز + وضعیتشان (خورده/رد/جا افتاده/آینده) |
+| `ui/components/Glass.kt` | Liquid Glass: پس‌زمینه، کارت شیشه‌ای، نوار blur |
 | `domain/Schedule.kt` | `isDueOn(date)`، `nextTrigger(after)`، خلاصه‌ی متنی برنامه |
 | `data/Entities.kt` | `Medicine`، `DoseTime`، `DoseLog` + enumها |
 | `data/Db.kt` | Room database + DAO |
+| `data/Backup.kt` | خروجی/بازیابی JSON کل داده (SAF، بدون اینترنت) |
 | `data/Repo.kt` | عملیات سطح بالا: ذخیره دارو (با زمان‌بندی آلارم)، ثبت مصرف (با کم‌کردن موجودی) |
 | `alarm/AlarmScheduler.kt` | زمان‌بندی/لغو آلارم‌ها |
 | `alarm/AlarmReceiver.kt` | زنگ زدن، اکشن‌های نوتیف (خوردم/بعداً/رد) |
