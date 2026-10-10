@@ -80,7 +80,7 @@ alarm/    scheduler, receivers, notifications, full-screen alarm
 ui/       Compose screens, Liquid Glass components, theme
 ```
 
-More: [Architecture](docs/ARCHITECTURE.md) · [Scheduling rules](docs/SCHEDULING.md) · [Design](docs/DESIGN.md) · [Roadmap](docs/ROADMAP.md)
+More: [Development](docs/DEVELOPMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Scheduling rules](docs/SCHEDULING.md) · [Design](docs/DESIGN.md) · [Roadmap](docs/ROADMAP.md)
 
 ## Build
 
@@ -98,6 +98,6 @@ Changes to scheduling logic need a test in `ScheduleTest`; data-layer changes a 
 
 ## License
 
-[MIT](LICENSE) © Milad
+[MIT](LICENSE) © Milad Mobaseri
 
 > ⚕️ This app is a reminder only and does not replace advice from a doctor or pharmacist.
