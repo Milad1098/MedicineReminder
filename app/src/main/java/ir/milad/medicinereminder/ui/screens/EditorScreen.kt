@@ -49,6 +49,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -86,6 +89,8 @@ import ir.milad.medicinereminder.ui.unit
 import ir.milad.medicinereminder.ui.theme.colors
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+
+private val colorNames = listOf("سفید", "زرد", "نارنجی", "قرمز", "صورتی", "بنفش", "آبی", "سبز")
 
 private val frequencies = listOf(
     Frequency.DAILY to "هر روز", Frequency.WEEKDAYS to "روزهای خاص هفته",
@@ -169,12 +174,15 @@ fun EditorScreen(id: Long, onClose: () -> Unit) {
                 }
                 RowDivider()
                 Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    medicineColors.forEach { c ->
+                    medicineColors.zip(colorNames).forEach { (c, colorName) ->
                         Box(
-                            Modifier.size(32.dp).clip(CircleShape).background(Color(c))
-                                .border(if (m.color == c) 3.dp else 1.dp, if (m.color == c) colors.accent else colors.separator, CircleShape)
-                                .clickable { m = m.copy(color = c) },
-                        )
+                            Modifier.size(40.dp).clip(CircleShape).clickable { m = m.copy(color = c) }
+                                .semantics { contentDescription = "رنگ $colorName"; selected = m.color == c },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Box(Modifier.size(32.dp).clip(CircleShape).background(Color(c))
+                                .border(if (m.color == c) 3.dp else 1.dp, if (m.color == c) colors.accent else colors.separator, CircleShape))
+                        }
                     }
                 }
             }

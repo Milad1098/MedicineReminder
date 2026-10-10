@@ -54,6 +54,10 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -152,9 +156,9 @@ fun GroupRow(onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> 
     content = content,
 )
 
-/** Round check that pops with a spring when checked. */
+/** Round check that pops with a spring when checked. [label] is read by TalkBack, e.g. "آموکسی‌سیلین، ساعت ۰۸:۰۰". */
 @Composable
-fun CheckCircle(checked: Boolean, color: Color, enabled: Boolean = true, onClick: () -> Unit) {
+fun CheckCircle(checked: Boolean, color: Color, enabled: Boolean = true, label: String = "", onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     val scale by animateFloatAsState(
         if (checked) 1f else 0.88f, spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium), label = "check",
@@ -163,13 +167,14 @@ fun CheckCircle(checked: Boolean, color: Color, enabled: Boolean = true, onClick
         Modifier.size(44.dp).scale(scale).clip(CircleShape)
             .background(if (checked) color else color.copy(alpha = 0.1f))
             .then(if (checked) Modifier else Modifier.border(2.dp, color.copy(alpha = if (enabled) 0.6f else 0.2f), CircleShape))
-            .clickable(enabled) {
+            .clickable(enabled, onClickLabel = if (checked) "برگرداندن" else "ثبت مصرف") {
                 if (!checked) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onClick()
-            },
+            }
+            .semantics { contentDescription = label + if (checked) "، خورده شد" else "، هنوز نخورده"; role = Role.Checkbox },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(Icons.Rounded.Check, "خوردم",
+        Icon(Icons.Rounded.Check, null,
             tint = if (checked) Color.White else color.copy(alpha = if (enabled) 0.6f else 0.2f),
             modifier = Modifier.size(24.dp))
     }
@@ -217,16 +222,17 @@ fun Stepper(value: Float, onChange: (Float) -> Unit, min: Float = 0.5f, integer:
 ) {
     fun step(up: Boolean) = if (integer) (if (up) value + 1 else maxOf(min, value - 1)) else nextAmount(value, up, min)
     // RTL: first child sits on the right → "+" on the right like Persian iOS
-    StepButton("+") { onChange(step(true)) }
+    StepButton("+", "بیشتر") { onChange(step(true)) }
     Text(if (integer) value.toInt().fa() else amountNumber(value),
         Modifier.width(44.dp), color = colors.text, fontWeight = FontWeight.Bold, fontSize = 17.sp,
         textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-    StepButton("−") { onChange(step(false)) }
+    StepButton("−", "کمتر") { onChange(step(false)) }
 }
 
 @Composable
-private fun StepButton(label: String, onClick: () -> Unit) = Box(
-    Modifier.size(40.dp).clickable(onClick = onClick), contentAlignment = Alignment.Center,
+private fun StepButton(label: String, spoken: String, onClick: () -> Unit) = Box(
+    Modifier.size(48.dp).clickable(onClick = onClick).semantics { contentDescription = spoken },
+    contentAlignment = Alignment.Center,
 ) { Text(label, color = colors.accent, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
 
 /** iOS-style wheel. [values] wrap around infinitely. */

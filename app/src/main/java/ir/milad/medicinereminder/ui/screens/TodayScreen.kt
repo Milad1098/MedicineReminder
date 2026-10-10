@@ -57,6 +57,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -237,7 +240,13 @@ private fun WeekStrip(today: LocalDate, selected: LocalDate, meds: List<Medicine
             val track = if (isSel) Color.White.copy(alpha = 0.35f) else colors.separator
             Column(
                 Modifier.clip(RoundedCornerShape(16.dp)).background(if (isSel) colors.accent else Color.Transparent)
-                    .clickable { onSelect(date) }.padding(vertical = 8.dp).width(42.dp),
+                    .clickable { onSelect(date) }
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "${dayName(date.dayOfWeek)} ${persianDate(date, "d MMMM")}" +
+                            if (doses.isEmpty()) "" else "، ${doses.count { it.state == DoseState.TAKEN }.fa()} از ${doses.size.fa()} وعده"
+                        this.selected = isSel
+                    }
+                    .padding(vertical = 8.dp).width(42.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(dayShort(date.dayOfWeek), color = if (isSel) Color.White else colors.textSecondary, fontSize = 12.sp)
@@ -324,7 +333,8 @@ private fun DoseCard(d: Dose, canAct: Boolean, onTake: () -> Unit, onSkip: () ->
                     }
                 }
             }
-            CheckCircle(d.state == DoseState.TAKEN, if (d.state == DoseState.MISSED) colors.danger else colors.accent, enabled = canAct) {
+            CheckCircle(d.state == DoseState.TAKEN, if (d.state == DoseState.MISSED) colors.danger else colors.accent, enabled = canAct,
+                label = "${m.name}، ${amountText(d.time.amount, m.form)}، ساعت ${timeText(d.time.minuteOfDay)}") {
                 if (d.log != null) onUndo() else onTake()
             }
         }
@@ -394,8 +404,9 @@ private fun PermissionsCard() {
                     Text(p.desc, color = colors.textSecondary, fontSize = 13.sp)
                 }
                 if (p.required) Text("فعال‌سازی", color = colors.accent, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                else Icon(Icons.Rounded.Close, "بستن", tint = colors.textSecondary,
-                    modifier = Modifier.size(20.dp).clickable { prefs.edit().putBoolean("dismiss_${p.key}", true).apply(); tick++ })
+                else Box(Modifier.size(44.dp).clip(CircleShape).clickable(onClickLabel = "بستن") {
+                    prefs.edit().putBoolean("dismiss_${p.key}", true).apply(); tick++
+                }, contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Close, "بستن", tint = colors.textSecondary, modifier = Modifier.size(20.dp)) }
             }
         }
     }
