@@ -14,7 +14,7 @@ android {
         applicationId = "ir.milad.medicinereminder"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
+        versionCode = 3
         versionName = "2.0.0"
     }
 
@@ -40,6 +40,7 @@ android {
     }
 
     buildFeatures { compose = true }
+    testOptions { unitTests.isIncludeAndroidResources = true }
     kotlinOptions { jvmTarget = "17" }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -71,4 +72,7 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:1.5.4")
 
     testImplementation("junit:junit:4.13.2")
+    // Real Android + in-memory Room in plain JVM tests (Repo, Backup, alarm list)
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:core:1.6.1")
 }
