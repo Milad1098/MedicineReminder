@@ -53,6 +53,13 @@ interface MedDao {
     @Query("SELECT * FROM dose_logs WHERE doseTimeId = :doseTimeId AND scheduledAt = :at")
     suspend fun logFor(doseTimeId: Long, at: Long): DoseLog?
 
+    // Backup / restore
+    @Transaction @Query("SELECT * FROM medicines") suspend fun all(): List<MedicineWithTimes>
+    @Query("SELECT * FROM dose_logs") suspend fun allLogs(): List<DoseLog>
+    @Query("DELETE FROM medicines") suspend fun deleteAll() // times + logs cascade
+    @Insert suspend fun insertTime(t: DoseTime): Long
+    @Insert suspend fun insertLogs(l: List<DoseLog>)
+
     @Query("SELECT * FROM dose_logs WHERE scheduledAt >= :from AND scheduledAt < :to ORDER BY scheduledAt")
     fun observeLogs(from: Long, to: Long): Flow<List<DoseLog>>
 }
@@ -67,5 +74,8 @@ abstract class AppDb : RoomDatabase() {
             instance ?: Room.databaseBuilder(context.applicationContext, AppDb::class.java, "medicine.db")
                 .build().also { instance = it }
         }
+
+        /** Tests swap in an in-memory database. */
+        internal fun replaceForTests(db: AppDb) { instance = db }
     }
 }

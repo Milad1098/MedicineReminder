@@ -1,6 +1,27 @@
 package ir.milad.medicinereminder.ui.screens
 
 import androidx.compose.foundation.background
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.rounded.CloudDownload
+import androidx.compose.material.icons.rounded.CloudUpload
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import ir.milad.medicinereminder.data.Backup
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import ir.milad.medicinereminder.ui.fa
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +85,90 @@ fun MedicinesScreen(meds: List<MedicineWithTimes>, onOpen: (Long) -> Unit, paddi
             item { SectionHeader("آرشیو (دوره‌ی تمام‌شده)") }
             item { MedList(archived, onOpen) }
         }
+        item { BackupSection() }
+        item { AboutSection() }
     }
+}
+
+/** Export / restore everything as one JSON file (data/Backup.kt). */
+@Composable
+private fun BackupSection() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var pendingRestore by remember { mutableStateOf<Uri?>(null) }
+    fun toast(msg: String) = Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+
+    val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        scope.launch {
+            runCatching { Backup.export(context, uri) }
+                .onSuccess { toast("پشتیبان ذخیره شد") }
+                .onFailure { toast("ذخیره نشد: ${it.message}") }
+        }
+    }
+    val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { pendingRestore = it }
+
+    SectionHeader("پشتیبان‌گیری")
+    Group {
+        GroupRow(onClick = { exporter.launch("medicine-backup-${LocalDate.now()}.json") }) {
+            Icon(Icons.Rounded.CloudUpload, null, tint = colors.accent)
+            Column(Modifier.weight(1f)) {
+                Text("ذخیره‌ی پشتیبان", color = colors.text, fontWeight = FontWeight.Bold)
+                Text("همه‌ی داروها و سابقه در یک فایل؛ در تلگرام یا گوگل‌درایو نگهش دار",
+                    color = colors.textSecondary, fontSize = 13.sp)
+            }
+        }
+        RowDivider(52.dp)
+        GroupRow(onClick = { importer.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }) {
+            Icon(Icons.Rounded.CloudDownload, null, tint = colors.accent)
+            Column(Modifier.weight(1f)) {
+                Text("بازیابی از فایل", color = colors.text, fontWeight = FontWeight.Bold)
+                Text("مثلاً بعد از عوض کردن گوشی", color = colors.textSecondary, fontSize = 13.sp)
+            }
+        }
+    }
+
+    pendingRestore?.let { uri ->
+        AlertDialog(
+            onDismissRequest = { pendingRestore = null },
+            title = { Text("بازیابی پشتیبان؟") },
+            text = { Text("داروها و سابقه‌ی فعلی این گوشی با محتوای فایل جایگزین می‌شود.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingRestore = null
+                    scope.launch {
+                        runCatching { Backup.import(context, uri) }
+                            .onSuccess { toast("${it.fa()} دارو بازیابی شد") }
+                            .onFailure { toast("این فایل پشتیبانِ یادآور دارو نیست") }
+                    }
+                }) { Text("بازیابی", color = colors.danger) }
+            },
+            dismissButton = { TextButton(onClick = { pendingRestore = null }) { Text("انصراف") } },
+        )
+    }
+}
+
+@Composable
+private fun AboutSection() {
+    val context = LocalContext.current
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).versionName }
+    SectionHeader("درباره")
+    Group {
+        GroupRow(onClick = {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Milad1098/MedicineReminder")))
+        }) {
+            Icon(Icons.Rounded.Code, null, tint = colors.accent)
+            Column(Modifier.weight(1f)) {
+                Text("کد منبع و گزارش مشکل", color = colors.text, fontWeight = FontWeight.Bold)
+                Text("رایگان و متن‌باز · نسخه‌ی ${version.orEmpty().fa()}", color = colors.textSecondary, fontSize = 13.sp)
+            }
+        }
+    }
+    Text(
+        "این برنامه فقط یادآور است و جایگزین توصیه‌ی پزشک یا داروساز نیست. همه‌ی اطلاعات فقط روی همین گوشی می‌ماند و جایی ارسال نمی‌شود.",
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+        color = colors.textSecondary, fontSize = 12.sp, textAlign = TextAlign.Center,
+    )
 }
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -94,7 +198,7 @@ private fun MedList(meds: List<MedicineWithTimes>, onOpen: (Long) -> Unit) = Gro
                     Text(
                         "موجودی: ${amountNumber(s.coerceAtLeast(0f))} ${unit(m.form)}" + if (low) " · تمدید کن" else "",
                         Modifier.padding(top = 4.dp).clip(RoundedCornerShape(8.dp))
-                            .background((if (low) colors.warning else colors.fill).copy(alpha = if (low) 0.18f else 1f))
+                            .background(if (low) colors.warning.copy(alpha = 0.18f) else colors.fill)
                             .padding(horizontal = 8.dp, vertical = 2.dp),
                         color = if (low) colors.warning else colors.textSecondary, fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
